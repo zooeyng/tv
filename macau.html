@@ -23,160 +23,50 @@ p {
 }
 	
 ul {
-     list-style-type: none;
-     margin: 0;
-     padding: 0;
-     background-color: #000000;
-     overflow: hidden;
-     
- }
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #000000;
+}
 
- li {
-     float: left;
- }
+li {
+    float: left;
+}
 
- li a {
-     color: #80F0FF;
-     padding: 14px 16px;
-     display: inline-block;
-     font-size:46px;
-     text-decoration: none;
-     height:60px;
-     width:200px;
- }
+li a {
+    display: block;
+    color: #80F0FF;
+	font-weight:bold;
+    text-align: center;
+	font-size:60px;
+    height:120px;
+	width:320px;
 
- li>a.active {
-     background-color: green;
- }
+}
 
- li>a:hover:not(a.active),
- .dropbtn:hover {
-     background-color: #555;
- }
-
- .dropdown-content {
-     display: none;
-     position: absolute;
-     background-color: #f9f9f9;
-     min-width: 100px;
-     box-shadow: 0 8px 16px 0 rgba(0, 0, 0, .2);
- }
-
- .dropdown-content a {
-background-color: #333;     
-color: #80F0FF;
-     display: block;
- }
-
- .dropdown-content a:hover {
-     background-color: #555;
-     color: #FF66C4;
- }
-
- .dropdown:hover .dropdown-content {
-     display: block;
- }
-	
+li a:hover {
+    background-color: #333;
+}	
 	
 </style>
 </head>
 	
 <body onload="open()">
 
-<div id="header" style="height:800px;width:1280px;" align="center">
-
-
-
+<div id="header" style="height:560px;width:1280px;" align="center">
 <ul>
-
-    <li>
-        <div class="dropdown"> <a href="#" class="dropbtn">TDM</a>
-            <div class="dropdown-content">
-              <a onclick="i00()">澳視澳門</a>
-              <a onclick="i01()">澳門體育</a> 
-              <a onclick="i02()">澳門綜藝</a> 
-              <a onclick="i03()">澳門衛星</a> 
-              <a onclick="i04()">中文電台</a> 
-              <a onclick="i05()">葡文電台</a>
-              
-            </div>
-        </div>
-    </li>
-
-    <li>
-        <div class="dropdown"> <a href="#" class="dropbtn">TVB</a>
-            <div class="dropdown-content">
-              <a onclick="i06()">翡翠台</a>
-              <a onclick="i07()">Plus台</a> 
-              <a onclick="i08()">翡翠综合</a> 
-              <a onclick="i09()">翡翠剧集</a>
-              <a onclick="i10()">千禧經典</a> 
-              <a onclick="i11()">娛樂新聞</a> 
-       
-            </div>
-        </div>
-    </li>
-
-    <li>
-        <div class="dropdown"> <a href="#" class="dropbtn">新聞</a>
-            <div class="dropdown-content">
-              <a onclick="i12()">澳門資訊</a>
-              <a onclick="i13()">無線新聞</a> 
-              <a onclick="i14()">東森新聞</a> 
-              <a onclick="i15()">中天新聞</a> 
-              <a onclick="i16()">寰宇新聞</a>
-              <a onclick="i17()">TVBS</a> 
-              <a onclick="i18()">鳳凰中文</a> 
-              <a onclick="i19()">鳳凰資訊</a> 
-              <a onclick="i20()">鳳凰香港</a>
-              <a onclick="i21()">娛樂新聞</a>
-       
-            </div>
-        </div>
-    </li>
-
-    <li>
-        <div class="dropdown"> <a href="#" class="dropbtn">電影</a>
-            <div class="dropdown-content">
-              <a onclick="i22()">美亞電影</a>
-              <a onclick="i23()">PopC</a> 
-              <a onclick="i24()">KIX</a> 
-              <a onclick="i25()">AXN</a> 
-              <a onclick="i26()">ROCK</a>
-              <a onclick="i27()">CNA</a> 
-              <a onclick="i28()">BBC</a> 
-              <a onclick="i29()">Fox</a> 
-              <a onclick="i30()">GBNEWS</a>
-              <a onclick="i31()">ABCNEWS</a>
-       
-            </div>
-        </div>
-    </li>
-
-    <li>
-        <div class="dropdown"> <a href="#" class="dropbtn">電視</a>
-            <div class="dropdown-content">
-              <a onclick="i32()">東方衛視</a>
-              <a onclick="i33()">U</a> 
-              <a onclick="i34()">KBS</a> 
-              <a onclick="i35()">tvN</a> 
-              <a onclick="i36()">tJB</a>
-              <a onclick="i37()">NHK</a> 
-              <a onclick="i38()">東京綜合</a> 
-              <a onclick="i39()">Fashion</a> 
-              <a onclick="i40()">RedBull</a>
-              <a onclick="i41()">Travel</a>
-              <a onclick="i42()">Food</a>
-            </div>
-        </div>
-    </li>
+  <li><a class="active" onclick="i00()">澳視澳門</a></li>
+  <li><a onclick="i01()">澳門資訊</a></li>
+  <li><a onclick="i02()">澳門體育</a></li>
+  <li><a onclick="i03()">澳門綜藝</a></li>
+ 
+  <li><a onclick="i04()">澳門衛星</a></li>
+  <li><a onclick="i05()">FM 100.7</a></li>
+  <li><a onclick="i06()">FM 98</a></li>
+	<li><a onclick="i07()">CCTV 1</a></li>
 
 </ul>
-
-<div
-<span id="NU" style="color:#000000;"></span>
-</div>
-
 <input type="text" name="aa" id="link" style="height:70px; width:1000px;font-size:33px;">
 <button type="button" style=" height: 70px; width: 120px; font-size:40px;" onclick="go()">GO</button>
 </div>
@@ -185,7 +75,13 @@ color: #80F0FF;
 <span id="NU" style="color:#000000;"></span>
 </div>
 
-<div id="content" style="background-color:#000000;clear:both;text-align:center; width:1280px;" align="center">		
+<div id="content" style="background-color:#000000; height:800px; width:1280px; float:left;" align="center">	
+<video id="myVideo" class="video-js vjs-default-skin" controls preload="auto" width="1250" height="703" data-setup='{}'>
+<source src="https://locallive.tdm.com.mo/ch1/ch1.live/playlist.m3u8" type="application/x-mpegURL">
+</video>
+</div>
+
+<div id="footer" style="background-color:#000000;clear:both;text-align:center; width:1280px;" align="center">		
 <table border="0">
 <tr>
   <td style="width: 250px;"></td>
@@ -195,13 +91,6 @@ color: #80F0FF;
 </tr>
 </table>
 </div>
-
-<div id="footer" style="background-color:#000000; height:800px; width:1280px; float:left;" align="center">	
-<video id="myVideo" class="video-js vjs-default-skin" controls preload="auto" width="1250" height="703" data-setup='{}'>
-<source src="https://locallive.tdm.com.mo/ch1/ch1.live/playlist.m3u8" type="application/x-mpegURL">
-</video>
-</div>
-
 
 <script>
 	function open(){
@@ -231,184 +120,45 @@ v1= document.getElementById("myVideo");
 f = document.getElementById("NU").innerHTML;
 g = Number(f)-1;
 document.getElementById("NU").innerHTML = g;
-switch (g){
+	switch (g){
   		        case 0:e="https://locallive.tdm.com.mo/ch1/ch1.live/playlist.m3u8";
     	break;
-			case 1:e="https://live3.tdm.com.mo/ch4/sport_ch4.live/playlist.m3u8";
-    	break;
-                        case 2:e="https://live3.tdm.com.mo/ch6/hd_ch6.live/playlist.m3u8";
-    	break;
-                        case 3:e="https://live3.tdm.com.mo/ch3/ch3.live/playlist.m3u8";
-    	break;
-			case 4:e="https://live3.tdm.com.mo/live/rch2.live/playlist.m3u8";
-    	break;
-                        case 5:e="https://live3.tdm.com.mo/live/rch1.live/playlist.m3u8";
-    	break;
-                        case 6:e="http://aktv.top/AKTV/live/aktv/null/AKTV.m3u8";
-    	break;
-                        case 7:e="http://aktv.top/AKTV/live/aktv/tvbplus/AKTV.m3u8";
-    	break;
-			case 8:e="http://aktv.top/AKTV/live/aktv/null-17/AKTV.m3u8";
-    	break;
-                        case 9:e="http://aktv.top/AKTV/live/aktv/null-18/AKTV.m3u8";
-    	break;
-                        case 10:e="http://aktv.top/AKTV/live/aktv/null-15/AKTV.m3u8";
-    	break;
-			case 11:e="http://aktv.top/AKTV/live/aktv/hk/AKTV.m3u8";
-    	break;
-                        case 12:e="https://live3.tdm.com.mo/ch5/info_ch5.live/playlist.m3u8";
-    	break;
-                        case 13:e="http://aktv.top/AKTV/live/aktv/null-1/AKTV.m3u8";
-    	break;
-			case 14:e="http://aktv.top/AKTV/live/aktv2/null/AKTV.m3u8";
-    	break;
-                        case 15:e="http://aktv.top/AKTV/live/aktv/null-6/AKTV.m3u8";
-    	break;
-                        case 16:e="http://aktv.top/AKTV/live/aktv/null-7/AKTV.m3u8";
-    	break;
-                        case 17:e="http://aktv.top/AKTV/live/aktv3/null-2/AKTV.m3u8";
-    	break;
-			case 18:e="http://aktv.top/AKTV/live/aktv/null-3/AKTV.m3u8";
-    	break;
-                        case 19:e="http://aktv.top/AKTV/live/aktv/null-4/AKTV.m3u8";
-    	break;
-                        case 20:e="http://aktv.top/AKTV/live/aktv/null-5/AKTV.m3u8";
-        break;
-			case 21:e="http://aktv.top/AKTV/live/aktv/hk/AKTV.m3u8";
-    	break;
-                        case 22:e="http://aktv.top/AKTV/live/aktv/hk-1/AKTV.m3u8";
-    	break;
-                        case 23:e="http://aktv.top/AKTV/live/aktv/popc/AKTV.m3u8";
-    	break;
-			case 24:e="http://aktv.top/AKTV/live/aktv3/kix/AKTV.m3u8";
-    	break;
-                        case 25:e="http://aktv.top/AKTV/live/aktv2/axn/AKTV.m3u8";
-    	break;
-                        case 26:e="http://aktv.top/AKTV/live/aktv/rockaction/AKTV.m3u8";
-    	break;
-                        case 27:e="http://aktv.top/AKTV/live/aktv3/null-3/AKTV.m3u8";
-    	break;
-			case 28:e="https://d3pxo1qcgzxtxs.cloudfront.net/10005/99951298/hls/playlist.m3u8?ads.xumo_channelId=99951298";
-    	break;
-                        case 29:e="https://fox-foxnewsnow-samsungus.amagi.tv/playlist720p.m3u8";
-    	break;
-                        case 30:e="https://live-gbnews.simplestreamcdn.com/live5/gbnews/bitrate1.isml/manifest.m3u8";
-        break;
-                        case 31:e="https://d4ybyqrhce41r.cloudfront.net/v1/master/3fec3e5cac39a52b2132f9c66c83dae043dc17d4/prod-xumo-linear-nbcu-hlsv3/master.m3u8?ads.channelId=99991626";
-    	break;
-                        case 32:e="http://aktv.top/AKTV/live/aktv3/null/AKTV.m3u8";
-    	break;
-                        case 33:e="http://aktv.top/AKTV/live/aktv/channeluhd/AKTV.m3u8";
-    	break;
-			case 34:e="https://kbsworld-ott.akamaized.net:443/hls/live/2002341/kbsworld/01.m3u8";
-    	break;
-                        case 35:e="http://aktv.top/AKTV/live/aktv/tvn/AKTV.m3u8";
-    	break;
-                        case 36:e="http://1.245.74.5:1935/live/tv/.m3u8";
-    	break;
-                        case 37:e="http://aktv.top/AKTV/live/aktv3/nhkworldjapan/AKTV.m3u8";
-    	break;
-			case 38:e="http://aktv.top/AKTV/live/aktv3/nhk/AKTV.m3u8";
-    	break;
-                        case 39:e="https://fash2043.cloudycdn.services/slive/ftv_ftv_4k_hevc_73d_42080_default_466_hls.smil/playlist.m3u8";
-    	break;
-                        case 40:e="https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8";
-        break;
-                        case 41:e="https://travelxp-travelxp-1-eu.xiaomi.wurl.tv/playlist.m3u8";
-    	break;
-                        case 42:e="https://food-eu.xiaomi.wurl.tv/playlist.m3u8";
-        break;
+			case 1:e="https://live3.tdm.com.mo/ch5/info_ch5.live/playlist.m3u8";
+    	break; 
+			case 2:e="https://live3.tdm.com.mo/ch4/sport_ch4.live/playlist.m3u8";
+    	break; 
+			case 3:e="https://live3.tdm.com.mo/ch6/hd_ch6.live/chunklist_w1161349884.m3u8";
+    	break; 
+			case 4:e="https://live3.tdm.com.mo/ch3/ch3.live/chunklist_w1780841035.m3u8";
+    	break; 
+			case 5:e="https://live3.tdm.com.mo/live/rch2.live/chunklist_w129550018.m3u8";
+    	break; 
+			case 6:e="https://live3.tdm.com.mo/live/rch1.live/chunklist_w506359701.m3u8";
+    	break; 
+			case 7:e="https://locallive.tdm.com.mo/cgtn/cgtn71/playlist.m3u8";
+    	break; 
 
  	}
 
 	switch (g){
-			case 0:i="澳視澳門";
+  		        case 0:i="澳視澳門";
     	break;
-			case 1:i="澳門體育";
+			case 1:i="澳門資訊";
+    	break; 
+			case 2:i="澳門體育";
+    	break; 
+			case 3:i="澳門綜藝";
+    	break; 
+			case 4:i="澳門衛星";
+    	break; 
+			case 5:i="FM 100.7";
+    	break; 
+			case 6:i="FM 98";
     	break;
-                        case 2:i="澳門綜藝";
+			case 7:i="CCTV 1";
     	break;
-                        case 3:i="澳門衛星";
-    	break;
-			case 4:i="中文電台";
-    	break;
-                        case 5:i="葡文電台";
-    	break;
-                        case 6:i="翡翠台";
-    	break;
-                        case 7:i="TVB Plus";
-    	break;
-			case 8:i="翡翠综合";
-    	break;
-                        case 9:i="翡翠剧集";
-    	break;
-                        case 10:i="千禧經典";
-    	break;
-			case 11:i="娛樂新聞";
-    	break;
-                        case 12:i="澳門資訊";
-    	break;
-                        case 13:i="無線新聞";
-    	break;
-			case 14:i="東森新聞";
-    	break;
-                        case 15:i="中天新聞";
-    	break;
-                        case 16:i="寰宇新聞";
-    	break;
-                        case 17:i="TVBS新聞";
-    	break;
-			case 18:i="鳳凰中文";
-    	break;
-                        case 19:i="鳳凰資訊";
-    	break;
-                        case 20:i="鳳凰香港";
-        break;
-			case 21:i="娛樂新聞";
-    	break;
-                        case 22:i="美亞電影";
-    	break;
-                        case 23:i="PopC";
-    	break;
-			case 24:i="KIX";
-    	break;
-                        case 25:i="AXN";
-    	break;
-                        case 26:i="Rock Action";
-    	break;
-                        case 27:i="CNA";
-    	break;
-			case 28:i="BBC";
-    	break;
-                        case 29:i="FOX NEWS";
-    	break;
-                        case 30:i="GB NEWS";
-        break;
-                        case 31:i="ABC NEWS";
-    	break;
-                        case 32:i="東方衛視";
-    	break;
-                        case 33:i="Channel U";
-    	break;
-			case 34:i="KBS World";
-    	break;
-                        case 35:i="tvN";
-    	break;
-                        case 36:i="TJB";
-    	break;
-                        case 37:i="NHK";
-    	break;
-			case 38:i="NHK東京綜合";
-    	break;
-                        case 39:i="Fashion";
-    	break;
-                        case 40:i="Red Bull";
-        break;
-                        case 41:i="Travel XP";
-    	break;
-                        case 42:i="Food";
-        break;
-			}
+
+			} 
 	v1.src =e;
  	v1.load();
 	v1.play();
@@ -427,180 +177,41 @@ document.getElementById("NU").innerHTML = g;
 switch (g){
   		        case 0:e="https://locallive.tdm.com.mo/ch1/ch1.live/playlist.m3u8";
     	break;
-			case 1:e="https://live3.tdm.com.mo/ch4/sport_ch4.live/playlist.m3u8";
-    	break;
-                        case 2:e="https://live3.tdm.com.mo/ch6/hd_ch6.live/playlist.m3u8";
-    	break;
-                        case 3:e="https://live3.tdm.com.mo/ch3/ch3.live/playlist.m3u8";
-    	break;
-			case 4:e="https://live3.tdm.com.mo/live/rch2.live/playlist.m3u8";
-    	break;
-                        case 5:e="https://live3.tdm.com.mo/live/rch1.live/playlist.m3u8";
-    	break;
-                        case 6:e="http://aktv.top/AKTV/live/aktv/null/AKTV.m3u8";
-    	break;
-                        case 7:e="http://aktv.top/AKTV/live/aktv/tvbplus/AKTV.m3u8";
-    	break;
-			case 8:e="http://aktv.top/AKTV/live/aktv/null-17/AKTV.m3u8";
-    	break;
-                        case 9:e="http://aktv.top/AKTV/live/aktv/null-18/AKTV.m3u8";
-    	break;
-                        case 10:e="http://aktv.top/AKTV/live/aktv/null-15/AKTV.m3u8";
-    	break;
-			case 11:e="http://aktv.top/AKTV/live/aktv/hk/AKTV.m3u8";
-    	break;
-                        case 12:e="https://live3.tdm.com.mo/ch5/info_ch5.live/playlist.m3u8";
-    	break;
-                        case 13:e="http://aktv.top/AKTV/live/aktv/null-1/AKTV.m3u8";
-    	break;
-			case 14:e="http://aktv.top/AKTV/live/aktv2/null/AKTV.m3u8";
-    	break;
-                        case 15:e="http://aktv.top/AKTV/live/aktv/null-6/AKTV.m3u8";
-    	break;
-                        case 16:e="http://aktv.top/AKTV/live/aktv/null-7/AKTV.m3u8";
-    	break;
-                        case 17:e="http://aktv.top/AKTV/live/aktv3/null-2/AKTV.m3u8";
-    	break;
-			case 18:e="http://aktv.top/AKTV/live/aktv/null-3/AKTV.m3u8";
-    	break;
-                        case 19:e="http://aktv.top/AKTV/live/aktv/null-4/AKTV.m3u8";
-    	break;
-                        case 20:e="http://aktv.top/AKTV/live/aktv/null-5/AKTV.m3u8";
-        break;
-			case 21:e="http://aktv.top/AKTV/live/aktv/hk/AKTV.m3u8";
-    	break;
-                        case 22:e="http://aktv.top/AKTV/live/aktv/hk-1/AKTV.m3u8";
-    	break;
-                        case 23:e="http://aktv.top/AKTV/live/aktv/popc/AKTV.m3u8";
-    	break;
-			case 24:e="http://aktv.top/AKTV/live/aktv3/kix/AKTV.m3u8";
-    	break;
-                        case 25:e="http://aktv.top/AKTV/live/aktv2/axn/AKTV.m3u8";
-    	break;
-                        case 26:e="http://aktv.top/AKTV/live/aktv/rockaction/AKTV.m3u8";
-    	break;
-                        case 27:e="http://aktv.top/AKTV/live/aktv3/null-3/AKTV.m3u8";
-    	break;
-			case 28:e="https://d3pxo1qcgzxtxs.cloudfront.net/10005/99951298/hls/playlist.m3u8?ads.xumo_channelId=99951298";
-    	break;
-                        case 29:e="https://fox-foxnewsnow-samsungus.amagi.tv/playlist720p.m3u8";
-    	break;
-                        case 30:e="https://live-gbnews.simplestreamcdn.com/live5/gbnews/bitrate1.isml/manifest.m3u8";
-        break;
-                        case 31:e="https://d4ybyqrhce41r.cloudfront.net/v1/master/3fec3e5cac39a52b2132f9c66c83dae043dc17d4/prod-xumo-linear-nbcu-hlsv3/master.m3u8?ads.channelId=99991626";
-    	break;
-                        case 32:e="http://aktv.top/AKTV/live/aktv3/null/AKTV.m3u8";
-    	break;
-                        case 33:e="http://aktv.top/AKTV/live/aktv/channeluhd/AKTV.m3u8";
-    	break;
-			case 34:e="https://kbsworld-ott.akamaized.net:443/hls/live/2002341/kbsworld/01.m3u8";
-    	break;
-                        case 35:e="http://aktv.top/AKTV/live/aktv/tvn/AKTV.m3u8";
-    	break;
-                        case 36:e="http://1.245.74.5:1935/live/tv/.m3u8";
-    	break;
-                        case 37:e="http://aktv.top/AKTV/live/aktv3/nhkworldjapan/AKTV.m3u8";
-    	break;
-			case 38:e="http://aktv.top/AKTV/live/aktv3/nhk/AKTV.m3u8";
-    	break;
-                        case 39:e="https://fash2043.cloudycdn.services/slive/ftv_ftv_4k_hevc_73d_42080_default_466_hls.smil/playlist.m3u8";
-    	break;
-                        case 40:e="https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8";
-        break;
-                        case 41:e="https://travelxp-travelxp-1-eu.xiaomi.wurl.tv/playlist.m3u8";
-    	break;
-                        case 42:e="https://food-eu.xiaomi.wurl.tv/playlist.m3u8";
-        break;
+			case 1:e="https://live3.tdm.com.mo/ch5/info_ch5.live/playlist.m3u8";
+    	break; 
+			case 2:e="https://live3.tdm.com.mo/ch4/sport_ch4.live/playlist.m3u8";
+    	break; 
+			case 3:e="https://live3.tdm.com.mo/ch6/hd_ch6.live/chunklist_w1161349884.m3u8";
+    	break; 
+			case 4:e="https://live3.tdm.com.mo/ch3/ch3.live/chunklist_w1780841035.m3u8";
+    	break; 
+			case 5:e="https://live3.tdm.com.mo/live/rch2.live/chunklist_w129550018.m3u8";
+    	break; 
+			case 6:e="https://live3.tdm.com.mo/live/rch1.live/chunklist_w506359701.m3u8";
+    	break; 
+		case 7:e="https://locallive.tdm.com.mo/cgtn/cgtn71/playlist.m3u8";
+    	break; 
 
  	}
 
 	switch (g){
-			case 0:i="澳視澳門";
+  		        case 0:i="澳視澳門";
     	break;
-			case 1:i="澳門體育";
+			case 1:i="澳門資訊";
+    	break; 
+			case 2:i="澳門體育";
+    	break; 
+			case 3:i="澳門綜藝";
+    	break; 
+			case 4:i="澳門衛星";
+    	break; 
+			case 5:i="FM 100.7";
+    	break; 
+			case 6:i="FM 98";
+    	break; 
+			case 7:i="CCTV 1";
     	break;
-                        case 2:i="澳門綜藝";
-    	break;
-                        case 3:i="澳門衛星";
-    	break;
-			case 4:i="中文電台";
-    	break;
-                        case 5:i="葡文電台";
-    	break;
-                        case 6:i="翡翠台";
-    	break;
-                        case 7:i="TVB Plus";
-    	break;
-			case 8:i="翡翠综合";
-    	break;
-                        case 9:i="翡翠剧集";
-    	break;
-                        case 10:i="千禧經典";
-    	break;
-			case 11:i="娛樂新聞";
-    	break;
-                        case 12:i="澳門資訊";
-    	break;
-                        case 13:i="無線新聞";
-    	break;
-			case 14:i="東森新聞";
-    	break;
-                        case 15:i="中天新聞";
-    	break;
-                        case 16:i="寰宇新聞";
-    	break;
-                        case 17:i="TVBS新聞";
-    	break;
-			case 18:i="鳳凰中文";
-    	break;
-                        case 19:i="鳳凰資訊";
-    	break;
-                        case 20:i="鳳凰香港";
-        break;
-			case 21:i="娛樂新聞";
-    	break;
-                        case 22:i="美亞電影";
-    	break;
-                        case 23:i="PopC";
-    	break;
-			case 24:i="KIX";
-    	break;
-                        case 25:i="AXN";
-    	break;
-                        case 26:i="Rock Action";
-    	break;
-                        case 27:i="CNA";
-    	break;
-			case 28:i="BBC";
-    	break;
-                        case 29:i="FOX NEWS";
-    	break;
-                        case 30:i="GB NEWS";
-        break;
-                        case 31:i="ABC NEWS";
-    	break;
-                        case 32:i="東方衛視";
-    	break;
-                        case 33:i="Channel U";
-    	break;
-			case 34:i="KBS World";
-    	break;
-                        case 35:i="tvN";
-    	break;
-                        case 36:i="TJB";
-    	break;
-                        case 37:i="NHK";
-    	break;
-			case 38:i="NHK東京綜合";
-    	break;
-                        case 39:i="Fashion";
-    	break;
-                        case 40:i="Red Bull";
-        break;
-                        case 41:i="Travel XP";
-    	break;
-                        case 42:i="Food";
-        break;
+
 			}
   
 	
@@ -615,301 +226,56 @@ document.getElementById("NUA").innerHTML =i;
 	function i00(){
 	document.getElementById("NU").innerHTML =0;
 	document.getElementById("NUA").innerHTML='澳視澳門';
-	myVideo.src ='https://locallive.tdm.com.mo/ch1/ch1.live/playlist.m3u8';
+	myVideo.src ='https://p.iptv200.com/play.php?token=ZVb3TZATr9nyaU0iblzl9Y4t&tid=ys&id=1&p=0&type=.flv';
  	myVideo.load();
 	myVideo.play();
 	}
 	function i01(){
 	document.getElementById("NU").innerHTML =1;
-		document.getElementById("NUA").innerHTML='澳門體育';
-	myVideo.src ='https://live3.tdm.com.mo/ch4/sport_ch4.live/playlist.m3u8';
+		document.getElementById("NUA").innerHTML='澳門資訊';
+	myVideo.src ='https://p.iptv200.com/play.php?token=Vv9beCLBSajvetAlBI74HQJT&tid=ws&id=1&p=0&type=.flv';
  	myVideo.load();
 	myVideo.play();
 	}
 	function i02(){
 	document.getElementById("NU").innerHTML =2;
-		document.getElementById("NUA").innerHTML='澳門綜藝';
-	myVideo.src ='https://live3.tdm.com.mo/ch6/hd_ch6.live/playlist.m3u8';
+		document.getElementById("NUA").innerHTML='澳門體育';
+	myVideo.src ='https://live3.tdm.com.mo/ch4/sport_ch4.live/playlist.m3u8';
  	myVideo.load();
 	myVideo.play();
 	}
 	function i03(){
 	document.getElementById("NU").innerHTML =3;
-		document.getElementById("NUA").innerHTML='澳門衛星';
-	myVideo.src ='https://live3.tdm.com.mo/ch3/ch3.live/playlist.m3u8';
+		document.getElementById("NUA").innerHTML='澳門綜藝';
+	myVideo.src ='https://live3.tdm.com.mo/ch6/hd_ch6.live/chunklist_w1161349884.m3u8';
  	myVideo.load();
 	myVideo.play();
 	}
 	function i04(){
 	document.getElementById("NU").innerHTML =4;
-		document.getElementById("NUA").innerHTML='中文電台';
-	myVideo.src ='https://live3.tdm.com.mo/live/rch2.live/playlist.m3u8';
+		document.getElementById("NUA").innerHTML='澳門衛星';
+	myVideo.src ='https://live3.tdm.com.mo/ch3/ch3.live/chunklist_w1780841035.m3u8';
  	myVideo.load();
 	myVideo.play();
 	}
 	function i05(){
 	document.getElementById("NU").innerHTML =5;
-		document.getElementById("NUA").innerHTML='葡文電台';
-	myVideo.src ='https://live3.tdm.com.mo/live/rch1.live/playlist.m3u8';
+		document.getElementById("NUA").innerHTML='FM 100.7';
+	myVideo.src ='https://live3.tdm.com.mo/live/rch2.live/chunklist_w129550018.m3u8';
  	myVideo.load();
 	myVideo.play();
 	}
 	function i06(){
 	document.getElementById("NU").innerHTML =6;
-		document.getElementById("NUA").innerHTML='翡翠台';
-	myVideo.src ='http://aktv.top/AKTV/live/aktv/null/AKTV.m3u8';
+		document.getElementById("NUA").innerHTML='FM 98';
+	myVideo.src ='https://live3.tdm.com.mo/live/rch1.live/chunklist_w506359701.m3u8';
  	myVideo.load();
 	myVideo.play();
 	}
 	function i07(){
 	document.getElementById("NU").innerHTML =7;
-		document.getElementById("NUA").innerHTML='TVB Plus';
-	myVideo.src ='http://aktv.top/AKTV/live/aktv/tvbplus/AKTV.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i08(){
-	document.getElementById("NU").innerHTML =8;
-		document.getElementById("NUA").innerHTML='翡翠综合';
-	myVideo.src ='http://aktv.top/AKTV/live/aktv/null-17/AKTV.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i09(){
-	document.getElementById("NU").innerHTML =9;
-		document.getElementById("NUA").innerHTML='翡翠剧集';
-	myVideo.src ='http://aktv.top/AKTV/live/aktv/null-18/AKTV.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i10(){
-	document.getElementById("NU").innerHTML =10;
-		document.getElementById("NUA").innerHTML='千禧經典';
-	myVideo.src ='http://aktv.top/AKTV/live/aktv/null-15/AKTV.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i11(){
-	document.getElementById("NU").innerHTML =11;
-		document.getElementById("NUA").innerHTML='娛樂新聞';
-	myVideo.src ='http://aktv.top/AKTV/live/aktv/hk/AKTV.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i12(){
-	document.getElementById("NU").innerHTML =12;
-		document.getElementById("NUA").innerHTML='澳門資訊';
-	myVideo.src ='https://live3.tdm.com.mo/ch5/info_ch5.live/playlist.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i13(){
-	document.getElementById("NU").innerHTML =13;
-		document.getElementById("NUA").innerHTML='無線新聞';
-	myVideo.src ='http://aktv.top/AKTV/live/aktv/null-1/AKTV.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i14(){
-	document.getElementById("NU").innerHTML =14;
-		document.getElementById("NUA").innerHTML='東森新聞';
-	myVideo.src ='http://aktv.top/AKTV/live/aktv2/null/AKTV.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i15(){
-	document.getElementById("NU").innerHTML =15;
-		document.getElementById("NUA").innerHTML='中天新聞';
-	myVideo.src ='http://aktv.top/AKTV/live/aktv/null-6/AKTV.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-        function i16(){
-	document.getElementById("NU").innerHTML =16;
-		document.getElementById("NUA").innerHTML='寰宇新聞';
-	myVideo.src ='http://aktv.top/AKTV/live/aktv/null-7/AKTV.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i17(){
-	document.getElementById("NU").innerHTML =17;
-		document.getElementById("NUA").innerHTML='TVBS新聞';
-	myVideo.src ='http://aktv.top/AKTV/live/aktv3/null-2/AKTV.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i18(){
-	document.getElementById("NU").innerHTML =18;
-		document.getElementById("NUA").innerHTML='鳳凰中文';
-	myVideo.src ='http://aktv.top/AKTV/live/aktv/null-3/AKTV.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i19(){
-	document.getElementById("NU").innerHTML =19;
-		document.getElementById("NUA").innerHTML='鳳凰資訊';
-	myVideo.src ='http://aktv.top/AKTV/live/aktv/null-4/AKTV.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i20(){
-	document.getElementById("NU").innerHTML =20;
-		document.getElementById("NUA").innerHTML='鳳凰香港';
-	myVideo.src ='http://aktv.top/AKTV/live/aktv/null-5/AKTV.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i21(){
-	document.getElementById("NU").innerHTML =21;
-		document.getElementById("NUA").innerHTML='娛樂新聞';
-	myVideo.src ='http://aktv.top/AKTV/live/aktv/hk/AKTV.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i22(){
-	document.getElementById("NU").innerHTML =22;
-		document.getElementById("NUA").innerHTML='美亞電影';
-	myVideo.src ='http://aktv.top/AKTV/live/aktv/hk-1/AKTV.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i23(){
-	document.getElementById("NU").innerHTML =23;
-		document.getElementById("NUA").innerHTML='PopC';
-	myVideo.src ='http://aktv.top/AKTV/live/aktv/popc/AKTV.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i24(){
-	document.getElementById("NU").innerHTML =24;
-		document.getElementById("NUA").innerHTML='KIX';
-	myVideo.src ='http://aktv.top/AKTV/live/aktv3/kix/AKTV.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i25(){
-	document.getElementById("NU").innerHTML =25;
-		document.getElementById("NUA").innerHTML='AXN';
-	myVideo.src ='http://aktv.top/AKTV/live/aktv2/axn/AKTV.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i26(){
-	document.getElementById("NU").innerHTML =26;
-		document.getElementById("NUA").innerHTML='Rock Action';
-	myVideo.src ='http://aktv.top/AKTV/live/aktv/rockaction/AKTV.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i27(){
-	document.getElementById("NU").innerHTML =27;
-		document.getElementById("NUA").innerHTML='CNA';
-	myVideo.src ='http://aktv.top/AKTV/live/aktv3/null-3/AKTV.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i28(){
-	document.getElementById("NU").innerHTML =28;
-		document.getElementById("NUA").innerHTML='BBC';
-	myVideo.src ='https://d3pxo1qcgzxtxs.cloudfront.net/10005/99951298/hls/playlist.m3u8?ads.xumo_channelId=99951298';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i29(){
-	document.getElementById("NU").innerHTML =29;
-		document.getElementById("NUA").innerHTML='FOX NEWS';
-	myVideo.src ='https://fox-foxnewsnow-samsungus.amagi.tv/playlist720p.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i30(){
-	document.getElementById("NU").innerHTML =30;
-		document.getElementById("NUA").innerHTML='GB NEWS';
-	myVideo.src ='https://live-gbnews.simplestreamcdn.com/live5/gbnews/bitrate1.isml/manifest.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i31(){
-	document.getElementById("NU").innerHTML =31;
-		document.getElementById("NUA").innerHTML='ABC NEWS';
-	myVideo.src ='https://d4ybyqrhce41r.cloudfront.net/v1/master/3fec3e5cac39a52b2132f9c66c83dae043dc17d4/prod-xumo-linear-nbcu-hlsv3/master.m3u8?ads.channelId=99991626';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i32(){
-	document.getElementById("NU").innerHTML =32;
-		document.getElementById("NUA").innerHTML='東方衛視';
-	myVideo.src ='http://aktv.top/AKTV/live/aktv3/null/AKTV.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i33(){
-	document.getElementById("NU").innerHTML =33;
-		document.getElementById("NUA").innerHTML='Channel U';
-	myVideo.src ='http://aktv.top/AKTV/live/aktv/channeluhd/AKTV.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i34(){
-	document.getElementById("NU").innerHTML =34;
-		document.getElementById("NUA").innerHTML='KBS World';
-	myVideo.src ='https://kbsworld-ott.akamaized.net:443/hls/live/2002341/kbsworld/01.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i35(){
-	document.getElementById("NU").innerHTML =35;
-		document.getElementById("NUA").innerHTML='tvN';
-	myVideo.src ='http://aktv.top/AKTV/live/aktv/tvn/AKTV.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-        function i36(){
-	document.getElementById("NU").innerHTML =36;
-		document.getElementById("NUA").innerHTML='TJB';
-	myVideo.src ='http://1.245.74.5:1935/live/tv/.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i37(){
-	document.getElementById("NU").innerHTML =37;
-		document.getElementById("NUA").innerHTML='NHK';
-	myVideo.src ='http://aktv.top/AKTV/live/aktv3/nhkworldjapan/AKTV.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i38(){
-	document.getElementById("NU").innerHTML =38;
-		document.getElementById("NUA").innerHTML='NHK東京綜合';
-	myVideo.src ='http://aktv.top/AKTV/live/aktv3/nhk/AKTV.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i39(){
-	document.getElementById("NU").innerHTML =39;
-		document.getElementById("NUA").innerHTML='Fashion';
-	myVideo.src ='https://fash2043.cloudycdn.services/slive/ftv_ftv_4k_hevc_73d_42080_default_466_hls.smil/playlist.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i40(){
-	document.getElementById("NU").innerHTML =40;
-		document.getElementById("NUA").innerHTML='Red Bull';
-	myVideo.src ='https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i41(){
-	document.getElementById("NU").innerHTML =41;
-		document.getElementById("NUA").innerHTML='Travel XP';
-	myVideo.src ='https://travelxp-travelxp-1-eu.xiaomi.wurl.tv/playlist.m3u8';
- 	myVideo.load();
-	myVideo.play();
-	}
-	function i42(){
-	document.getElementById("NU").innerHTML =42;
-		document.getElementById("NUA").innerHTML='Food';
-	myVideo.src ='https://food-eu.xiaomi.wurl.tv/playlist.m3u8';
+		document.getElementById("NUA").innerHTML='CCTV 1';
+	myVideo.src ='https://locallive.tdm.com.mo/cgtn/cgtn71/playlist.m3u8';
  	myVideo.load();
 	myVideo.play();
 	}
@@ -918,3 +284,4 @@ document.getElementById("NUA").innerHTML =i;
 	
 </body>
 </html>
+
