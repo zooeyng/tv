@@ -64,7 +64,9 @@ li a:hover {
   <li><a onclick="i04()">澳門衛星</a></li>
   <li><a onclick="i05()">FM 100.7</a></li>
   <li><a onclick="i06()">FM 98</a></li>
-	<li><a onclick="i07()">CCTV 1</a></li>
+  <li><a onclick="i07()">CCTV 1</a></li>
+
+  <li><a onclick="i08()">LIVE</a></li> 	
 
 </ul>
 <input type="text" name="aa" id="link" style="height:70px; width:1000px;font-size:33px;">
@@ -137,6 +139,8 @@ document.getElementById("NU").innerHTML = g;
     	break; 
 			case 7:e="https://locallive.tdm.com.mo/cgtn/cgtn71/playlist.m3u8";
     	break; 
+			case 8:e="http://192.168.1.168/lives/m0/hls.m3u8";
+    	break; 
 
  	}
 
@@ -156,6 +160,8 @@ document.getElementById("NU").innerHTML = g;
 			case 6:i="FM 98";
     	break;
 			case 7:i="CCTV 1";
+    	break;
+			case 8:i="LIVE";
     	break;
 
 			} 
@@ -189,8 +195,10 @@ switch (g){
     	break; 
 			case 6:e="https://live3.tdm.com.mo/live/rch1.live/chunklist_w506359701.m3u8";
     	break; 
-		case 7:e="https://locallive.tdm.com.mo/cgtn/cgtn71/playlist.m3u8";
+		    case 7:e="https://locallive.tdm.com.mo/cgtn/cgtn71/playlist.m3u8";
     	break; 
+		    case 8:e="http://192.168.1.168/lives/m0/hls.m3u8";
+    	break;
 
  	}
 
@@ -210,6 +218,8 @@ switch (g){
 			case 6:i="FM 98";
     	break; 
 			case 7:i="CCTV 1";
+    	break;
+			case 8:i="LIVE";
     	break;
 
 			}
@@ -276,6 +286,13 @@ document.getElementById("NUA").innerHTML =i;
 	document.getElementById("NU").innerHTML =7;
 		document.getElementById("NUA").innerHTML='CCTV 1';
 	myVideo.src ='https://locallive.tdm.com.mo/cgtn/cgtn71/playlist.m3u8';
+ 	myVideo.load();
+	myVideo.play();
+	}
+	function i08(){
+	document.getElementById("NU").innerHTML =8;
+		document.getElementById("NUA").innerHTML='LIVE';
+	myVideo.src ='http://192.168.1.168/lives/m0/hls.m3u8';
  	myVideo.load();
 	myVideo.play();
 	}
