@@ -66,7 +66,10 @@ li a:hover {
   <li><a onclick="i06()">FM 98</a></li>
   <li><a onclick="i07()">CCTV 1</a></li>
 
-  <li><a onclick="i08()">LIVE</a></li> 	
+  <li><a onclick="i08()">m3u8</a></li> 
+	<li><a onclick="i09()">FLV</a></li>
+  <li><a onclick="i10()">TS</a></li>
+  <li><a onclick="i11()">RTMP</a></li>
 
 </ul>
 <input type="text" name="aa" id="link" style="height:70px; width:1000px;font-size:33px;">
@@ -139,7 +142,13 @@ document.getElementById("NU").innerHTML = g;
     	break; 
 			case 7:e="https://locallive.tdm.com.mo/cgtn/cgtn71/playlist.m3u8";
     	break; 
-			case 8:e="http://192.168.31.168/lives/m0/hls.m3u8";
+			case 8:e="http://192.168.1.168/lives/m0/hls.m3u8";
+    	break; 
+			case 9:e="http://192.168.1.168/lives/m0.live.flv";
+    	break; 
+			case 10:e="http://192.168.1.168/lives/m0.live.ts";
+    	break; 
+			case 11:e="rtmp://192.168.1.168:1935/lives/m0";
     	break; 
 
  	}
@@ -161,7 +170,13 @@ document.getElementById("NU").innerHTML = g;
     	break;
 			case 7:i="CCTV 1";
     	break;
-			case 8:i="LIVE";
+			case 8:i="m3u8";
+    	break;
+			case 9:i="FLV";
+    	break;
+			case 10:i="TS";
+    	break;
+			case 11:i="RTMP";
     	break;
 
 			} 
@@ -197,7 +212,13 @@ switch (g){
     	break; 
 		    case 7:e="https://locallive.tdm.com.mo/cgtn/cgtn71/playlist.m3u8";
     	break; 
-		    case 8:e="http://192.168.31.168/lives/m0/hls.m3u8";
+		    case 8:e="http://192.168.1.168/lives/m0/hls.m3u8";
+    	break; 
+			case 9:e="http://192.168.1.168/lives/m0.live.flv";
+    	break; 
+			case 10:e="http://192.168.1.168/lives/m0.live.ts";
+    	break; 
+			case 11:e="rtmp://192.168.1.168:1935/lives/m0";
     	break;
 
  	}
@@ -219,7 +240,13 @@ switch (g){
     	break; 
 			case 7:i="CCTV 1";
     	break;
-			case 8:i="LIVE";
+			case 8:i="m3u8";
+    	break;
+			case 9:i="FLV";
+    	break;
+			case 10:i="TS";
+    	break;
+			case 11:i="RTMP";
     	break;
 
 			}
@@ -291,12 +318,32 @@ document.getElementById("NUA").innerHTML =i;
 	}
 	function i08(){
 	document.getElementById("NU").innerHTML =8;
-		document.getElementById("NUA").innerHTML='LIVE';
-	myVideo.src ='http://192.168.31.168/lives/m0/hls.m3u8';
+		document.getElementById("NUA").innerHTML='m3u8';
+	myVideo.src ='http://192.168.1.168/lives/m0/hls.m3u8';
  	myVideo.load();
 	myVideo.play();
 	}
-	
+function i09(){
+	document.getElementById("NU").innerHTML =9;
+		document.getElementById("NUA").innerHTML='FLV';
+	myVideo.src ='http://192.168.1.168/lives/m0.live.flv';
+ 	myVideo.load();
+	myVideo.play();
+	}
+	function i10(){
+	document.getElementById("NU").innerHTML =10;
+		document.getElementById("NUA").innerHTML='TS';
+	myVideo.src ='http://192.168.1.168/lives/m0.live.ts';
+ 	myVideo.load();
+	myVideo.play();
+	}
+	function i11(){
+	document.getElementById("NU").innerHTML =11;
+		document.getElementById("NUA").innerHTML='RTMP';
+	myVideo.src ='rtmp://192.168.1.168:1935/lives/m0';
+ 	myVideo.load();
+	myVideo.play();
+	}
 </script>
 	
 </body>
