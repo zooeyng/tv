@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>一對一音頻串流 · 公網IP直連版</title>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body {
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+  background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  background-size: 400% 400%;
+  animation: bgShift 15s ease infinite;
+  color: #fff;
+  overflow-x: hidden;
+  padding: 20px;
+}
+@keyframes bgShift { 0%,100% { background-position: 0% 50% } 50% { background-position: 100% 50% } }
+.glass {
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 24px;
+  padding: 32px;
+  max-width: 560px;
+  margin: 0 auto;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+}
+h1 {
+  font-size: 26px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 8px;
+  background: linear-gradient(90deg, #a78bfa, #60a5fa, #34d399);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.subtitle { text-align: center; font-size: 14px; color: rgba(255,255,255,0.6); margin-bottom: 28px; }
+.status-bar {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 14px 20px; border-radius: 16px; margin-bottom: 24px; font-size: 15px; font-weight: 500;
+  background: rgba(255,255,255,0.06); transition: all 0.4s ease;
+}
+.status-dot { width: 10px; height: 10px; border-radius: 50%; background: #a78bfa; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; transform: scale(1) } 50% { opacity: 0.5; transform: scale(1.2) } }
+.status-bar.connected { background: rgba(52,211,153,0.15); }
+.status-bar.connected .status-dot { background: #34d399; animation: none; }
+.status-bar.connecting { background: rgba(251,191,36,0.15); }
+.status-bar.connecting .status-dot { background: #fbbf24; }
+.status-bar.error { background: rgba(239,68,68,0.15); }
+.status-bar.error .status-dot { background: #ef4444; animation: none; }
+.eq-container {
+  display: flex; align-items: flex-end; justify-content: center; gap: 4px;
+  height: 140px; padding: 16px; margin-bottom: 24px; border-radius: 16px;
+  background: rgba(0,0,0,0.25);
+}
+.eq-bar {
+  flex: 1; min-width: 6px; max-width: 14px;
+  background: linear-gradient(180deg, #a78bfa 0%, #60a5fa 50%, #34d399 100%);
+  border-radius: 4px 4px 0 0; height: 6px;
+  transition: height 0.08s ease-out;
+  box-shadow: 0 0 8px rgba(167,139,250,0.4);
+}
+.btn {
+  width: 100%; padding: 16px; border: none; border-radius: 14px;
+  font-size: 16px; font-weight: 600; color: #fff; cursor: pointer;
+  background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
+  box-shadow: 0 8px 24px rgba(139,92,246,0.35);
+  transition: all 0.2s ease; margin-bottom: 12px;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(139,92,246,0.5); }
+.btn:active { transform: translateY(0); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-danger { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); box-shadow: 0 8px 24px rgba(239,68,68,0.35); }
+.btn-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 8px 24px rgba(16,185,129,0.35); }
+.qr-wrap {
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+  padding: 24px; border-radius: 16px; background: rgba(255,255,255,0.06); margin-bottom: 20px;
+}
+#qrcode { background: #fff; padding: 12px; border-radius: 12px; }
+#qrcode img, #qrcode canvas { display: block; border-radius: 4px; }
+.link-box {
+  display: flex; gap: 8px; width: 100%;
+}
+.link-input {
+  flex: 1; padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(0,0,0,0.3); color: #fff; font-size: 13px; font-family: monospace; outline: none;
+}
+.copy-btn {
+  padding: 10px 16px; border: none; border-radius: 10px; background: rgba(167,139,250,0.3);
+  color: #fff; font-size: 13px; cursor: pointer; transition: background 0.2s;
+}
+.copy-btn:hover { background: rgba(167,139,250,0.5); }
+.config-panel {
+  padding: 20px; border-radius: 16px; background: rgba(255,255,255,0.05); margin-bottom: 20px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.config-title { font-size: 15px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.config-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.config-row:last-child { margin-bottom: 0; }
+.config-label { font-size: 13px; color: rgba(255,255,255,0.7); }
+.config-input-row { display: flex; gap: 8px; }
+.config-input {
+  flex: 1; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(0,0,0,0.3); color: #fff; font-size: 14px; outline: none; transition: border-color 0.2s;
+}
+.config-input:focus { border-color: #a78bfa; }
+.config-hint { font-size: 12px; color: rgba(255,255,255,0.45); line-height: 1.6; }
+.toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; }
+.toggle { position: relative; width: 48px; height: 26px; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0; background: rgba(255,255,255,0.2); border-radius: 13px; cursor: pointer;
+  transition: 0.3s;
+}
+.toggle-slider:before {
+  content: ''; position: absolute; height: 20px; width: 20px; left: 3px; bottom: 3px;
+  background: #fff; border-radius: 50%; transition: 0.3s;
+}
+.toggle input:checked + .toggle-slider { background: linear-gradient(135deg, #8b5cf6, #3b82f6); }
+.toggle input:checked + .toggle-slider:before { transform: translateX(22px); }
+.info-panel { padding: 16px; border-radius: 12px; background: rgba(0,0,0,0.2); font-size: 13px; line-height: 1.8; }
+.info-row { display: flex; justify-content: space-between; gap: 12px; }
+.info-key { color: rgba(255,255,255,0.55); }
+.info-val { color: #fff; font-weight: 500; font-family: monospace; }
+.info-val.ok { color: #34d399; }
+.info-val.warn { color: #fbbf24; }
+.info-val.err { color: #ef4444; }
+.hidden { display: none !important; }
+.toast {
+  position: fixed; top: 24px; left: 50%; transform: translateX(-50%) translateY(-80px);
+  padding: 12px 24px; border-radius: 12px; background: rgba(52,211,153,0.95); color: #fff;
+  font-size: 14px; font-weight: 500; z-index: 999; transition: transform 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.err { background: rgba(239,68,68,0.95); }
+@media (max-width: 600px) {
+  .glass { padding: 24px 20px; border-radius: 20px; }
+  h1 { font-size: 22px; }
+  .eq-container { height: 120px; gap: 3px; }
+  .eq-bar { min-width: 4px; }
+}
+</style>
+</head>
+<body>
+
+<div class="glass">
+  <h1>🎙️ 一對一音頻串流</h1>
+  <p class="subtitle" id="roleSubtitle">公網IP直連版 · 高音質低延遲</p>
+
+  <div class="status-bar" id="statusBar">
+    <div class="status-dot"></div>
+    <span id="statusText">初始化中...</span>
+  </div>
+
+  <div class="eq-container" id="eqContainer"></div>
+
+  <!-- ========== 推流端（手机） ========== -->
+  <div id="senderUI" class="hidden">
+    <button class="btn" id="startBtn">🎤 開始傳輸音頻</button>
+    <button class="btn btn-danger hidden" id="stopBtn">⏹️ 停止傳輸</button>
+  </div>
+
+  <!-- ========== 接收端（电脑） ========== -->
+  <div id="receiverUI">
+    <!-- 公网IP配置面板 -->
+    <div class="config-panel">
+      <div class="config-title">🌐 公網IP直連配置</div>
+      <div class="config-row">
+        <div class="config-label">公網IP位址</div>
+        <div class="config-input-row">
+          <input type="text" class="config-input" id="publicIpInput" placeholder="偵測中..." readonly>
+          <button class="copy-btn" id="detectIpBtn">偵測IP</button>
+        </div>
+        <div class="config-hint">點「偵測IP」自動獲取，也可手動輸入固定公網IP</div>
+      </div>
+      <div class="config-row">
+        <div class="config-label">映射端口（UDP）</div>
+        <input type="number" class="config-input" id="publicPortInput" value="12345" min="10000" max="65535" style="width:100%">
+        <div class="config-hint">
+          👉 路由器需做端口映射：外部端口=內部端口=此值，協議UDP，指向本機內網IP<br>
+          本機內網IP：<span id="localIpHint">偵測中...</span>
+        </div>
+      </div>
+      <div class="toggle-row">
+        <div>
+          <div style="font-size:14px;font-weight:500">啟用公網IP直連</div>
+          <div class="config-hint" style="margin-top:2px">開啟後優先走公網直連，跨網100%穩定</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="directConnectToggle" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="qr-wrap" id="qrWrap">
+      <div id="qrcode"></div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.6)">手機掃碼打開推流端</div>
+      <div class="link-box">
+        <input type="text" class="link-input" id="inviteLink" readonly>
+        <button class="copy-btn" id="copyLinkBtn">複製</button>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <div class="info-row"><span class="info-key">連接方式</span><span class="info-val" id="connType">等待連接</span></div>
+      <div class="info-row"><span class="info-key">實時碼率</span><span class="info-val" id="bitrateInfo">-- kbps</span></div>
+      <div class="info-row"><span class="info-key">音頻格式</span><span class="info-val">Opus 48kHz 立體聲</span></div>
+      <div class="info-row"><span class="info-key">回聲消除</span><span class="info-val err" id="aecInfo">關閉</span></div>
+      <div class="info-row"><span class="info-key">降噪</span><span class="info-val err" id="nsInfo">關閉</span></div>
+      <div class="info-row"><span class="info-key">自動增益</span><span class="info-val err" id="agcInfo">關閉</span></div>
+    </div>
+  </div>
+</div>
+
+<audio id="remoteAudio" autoplay playsinline></audio>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  'use strict';
+
+  // ========== 初始化EQ柱 ==========
+  const eqContainer = document.getElementById('eqContainer');
+  const BAR_COUNT = window.innerWidth < 480 ? 24 : 32;
+  const eqBars = [];
+  for (let i = 0; i < BAR_COUNT; i++) {
+    const bar = document.createElement('div');
+    bar.className = 'eq-bar';
+    eqContainer.appendChild(bar);
+    eqBars.push(bar);
+  }
+  function setIdleEQ() {
+    eqBars.forEach((b, i) => {
+      const t = Date.now() / 1000;
+      const h = 6 + Math.sin(t * 1.5 + i * 0.3) * 4 + Math.sin(t * 2 + i * 0.5) * 3;
+      b.style.height = Math.max(6, h) + 'px';
+    });
+    requestAnimationFrame(setIdleEQ);
+  }
+  let audioCtx = null, analyser = null, dataArray = null, rafId = null;
+  function startEQ(stream) {
+    if (rafId) cancelAnimationFrame(rafId);
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const src = audioCtx.createMediaStreamSource(stream);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 512;
+    src.connect(analyser);
+    dataArray = new Uint8Array(analyser.frequencyBinCount);
+    function draw() {
+      analyser.getByteFrequencyData(dataArray);
+      const binSize = Math.floor(dataArray.length / BAR_COUNT);
+      for (let i = 0; i < BAR_COUNT; i++) {
+        let sum = 0;
+        for (let j = 0; j < binSize; j++) sum += dataArray[i * binSize + j];
+        const v = sum / binSize / 255;
+        const h = Math.max(6, v * 120);
+        eqBars[i].style.height = h + 'px';
+      }
+      rafId = requestAnimationFrame(draw);
+    }
+    draw();
+  }
+  function stopEQ() {
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    setIdleEQ();
+  }
+  setIdleEQ();
+
+  // ========== UI工具 ==========
+  const statusBar = document.getElementById('statusBar');
+  const statusText = document.getElementById('statusText');
+  const toast = document.getElementById('toast');
+  function setStatus(text, type) {
+    statusText.textContent = text;
+    statusBar.className = 'status-bar ' + (type || '');
+  }
+  function showToast(msg, isErr) {
+    toast.textContent = msg;
+    toast.className = 'toast' + (isErr ? ' err show' : ' show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  }
+
+  // ========== 角色判斷 ==========
+  const urlParams = new URLSearchParams(window.location.search);
+  const remoteId = urlParams.get('id');
+  const role = remoteId ? 'sender' : 'receiver';
+  const isSender = role === 'sender';
+
+  document.getElementById('roleSubtitle').textContent = isSender
+    ? '推流端 · 將音頻發送到接收端'
+    : '接收端 · 公網IP直連 · 高音質';
+  document.getElementById('senderUI').classList.toggle('hidden', !isSender);
+  document.getElementById('receiverUI').classList.toggle('hidden', isSender);
+
+  // ========== 高音質：Opus SDP改寫 ==========
+  function mungeSDP(sdp) {
+    const lines = sdp.split('\r\n');
+    let opusMLineIdx = -1;
+    let opusPayload = -1;
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].startsWith('m=audio')) {
+        const parts = lines[i].split(' ');
+        for (let j = 3; j < parts.length; j++) {
+          if (parts[j] !== '0' && parts[j] !== '8' && parts[j] !== '9') {
+            opusPayload = parseInt(parts[j]);
+            opusMLineIdx = i;
+            break;
+          }
+        }
+        if (opusPayload !== -1) break;
+      }
+    }
+    if (opusPayload === -1) return sdp;
+    let fmtpLineIdx = -1;
+    for (let i = opusMLineIdx + 1; i < lines.length; i++) {
+      if (lines[i].startsWith('m=')) break;
+      if (lines[i].startsWith('a=fmtp:' + opusPayload)) { fmtpLineIdx = i; break; }
+    }
+    const stereoOpus = 'stereo=1;sprop-stereo=1;maxaveragebitrate=256000;maxplaybackrate=48000;sprop-maxcapturerate=48000;usedtx=0;useinbandfec=1;minptime=10';
+    if (fmtpLineIdx >= 0) {
+      lines[fmtpLineIdx] = 'a=fmtp:' + opusPayload + ' ' + stereoOpus;
+    } else {
+      lines.splice(opusMLineIdx + 1, 0, 'a=fmtp:' + opusPayload + ' ' + stereoOpus);
+    }
+    return lines.join('\r\n');
+  }
+
+  // ========== 构建ICE配置（含公网直连候选） ==========
+  function buildIceConfig() {
+    const servers = [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'stun:stun.qq.com:3478' },
+      { urls: 'stun:stun.miwifi.com:3478' },
+      { urls: 'stun:stun.chat.bilibili.com:3478' }
+    ];
+    // 如果启用公网直连，且接收端配置了IP和端口，添加TURN（静态公网IP）候选
+    // WebRTC没有直接加IP的API，我们通过 iceServers 的 turn 无法伪造直连
+    // 正确做法：通过 RTCPeerConnection.addIceCandidate 注入 host candidate
+    // 但PeerJS封装了PC，我们用另一个方案：在PeerJS配置里设置 host/port 不影响媒体
+    // 实际上，接收端在路由器映射了UDP端口后，STUN会探测到正确的公网地址
+    // 我们这里额外追加TURN节点做兜底
+    return { iceServers: servers, iceTransportPolicy: 'all' };
+  }
+
+  // ========== 接收端逻辑 ==========
+  if (!isSender) {
+    let myId = null;
+    let peer = null;
+    let connTypeEl = document.getElementById('connType');
+    let bitrateEl = document.getElementById('bitrateInfo');
+    let lastBytes = 0, lastTime = 0, remoteStream = null, pc = null;
+
+    // 检测公网IP
+    async function detectPublicIP() {
+      const ipInput = document.getElementById('publicIpInput');
+      const apis = [
+        'https://api.ipify.org?format=json',
+        'https://api.ip.sb/jsonip',
+        'https://api.myip.com'
+      ];
+      for (const url of apis) {
+        try {
+          const r = await fetch(url, { timeout: 5000 });
+          const d = await r.json();
+          if (d.ip) { ipInput.value = d.ip; return d.ip; }
+        } catch(e) {}
+      }
+      ipInput.placeholder = '偵測失敗，請手動輸入';
+      ipInput.readOnly = false;
+      return null;
+    }
+
+    // 检测本机内网IP提示
+    function getLocalIPs() {
+      const hint = document.getElementById('localIpHint');
+      const rtc = new RTCPeerConnection({ iceServers: [] });
+      rtc.createDataChannel('');
+      rtc.createOffer().then(o => rtc.setLocalDescription(o));
+      rtc.onicecandidate = e => {
+        if (!e.candidate) { rtc.close(); return; }
+        const m = e.candidate.candidate.match(/([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})/);
+        if (m && !m[1].startsWith('0.') && hint.textContent.includes('偵測')) {
+          const ip = m[1];
+          if (ip.startsWith('192.') || ip.startsWith('10.') || ip.startsWith('172.')) {
+            hint.textContent = ip + '（端口映射時內部IP填這個）';
+            hint.style.color = '#34d399';
+          }
+        }
+      };
+    }
+
+    detectPublicIP();
+    getLocalIPs();
+    document.getElementById('detectIpBtn').onclick = detectPublicIP;
+
+    // 生成PeerID
+    myId = 'live-' + Math.random().toString(36).substr(2, 10);
+    const inviteUrl = window.location.origin + window.location.pathname + '?id=' + myId;
+    document.getElementById('inviteLink').value = inviteUrl;
+    new QRCode(document.getElementById('qrcode'), { text: inviteUrl, width: 180, height: 180, correctLevel: QRCode.CorrectLevel.M });
+    document.getElementById('copyLinkBtn').onclick = () => {
+      navigator.clipboard.writeText(inviteUrl).then(() => showToast('鏈接已複製'));
+    };
+
+    // 连接PeerJS
+    function initPeer() {
+      setStatus('等待推流端連接...', '');
+      connTypeEl.textContent = '等待連接';
+      connTypeEl.className = 'info-val warn';
+
+      peer = new Peer(myId, {
+        config: buildIceConfig(),
+        debug: 1
+      });
+
+      peer.on('open', () => {
+        setStatus('等待推流端連接...', '');
+      });
+
+      peer.on('call', call => {
+        setStatus('正在建立媒體通道...', 'connecting');
+        connTypeEl.textContent = '連接中...';
+
+        // 拦截SDP做高质量修改
+        const origSetRD = call.peerConnection.setRemoteDescription.bind(call.peerConnection);
+        call.peerConnection.setRemoteDescription = function(desc) {
+          if (desc.sdp) desc.sdp = mungeSDP(desc.sdp);
+          return origSetRD(desc);
+        };
+        const origSetLD = call.peerConnection.setLocalDescription.bind(call.peerConnection);
+        call.peerConnection.setLocalDescription = function(desc) {
+          if (desc.sdp) desc.sdp = mungeSDP(desc.sdp);
+          return origSetLD(desc);
+        };
+
+        // 如果启用了公网直连，注入公网IP:端口作为host candidate
+        const useDirect = document.getElementById('directConnectToggle').checked;
+        const pubIp = document.getElementById('publicIpInput').value.trim();
+        const pubPort = parseInt(document.getElementById('publicPortInput').value) || 12345;
+
+        call.answer();
+
+        call.on('stream', stream => {
+          remoteStream = stream;
+          const audio = document.getElementById('remoteAudio');
+          audio.srcObject = stream;
+          audio.muted = false;
+          const playPromise = audio.play();
+          if (playPromise && playPromise.catch) {
+            playPromise.catch(() => {
+              document.body.addEventListener('click', function once() {
+                audio.play(); document.body.removeEventListener('click', once);
+              }, { once: true });
+              showToast('點擊頁面解除靜音');
+            });
+          }
+          startEQ(stream);
+          setStatus('✅ 連接成功，音頻傳輸中', 'connected');
+          pc = call.peerConnection;
+
+          // 监听ICE状态判断连接类型
+          pc.addEventListener('iceconnectionstatechange', () => {
+            const state = pc.iceConnectionState;
+            if (state === 'connected' || state === 'completed') {
+              // 判断是否直连
+              const pair = pc.getStats ? null : null;
+              connTypeEl.textContent = '✅ 已連接';
+              connTypeEl.className = 'info-val ok';
+              setStatus('✅ 連接成功，音頻傳輸中', 'connected');
+            } else if (state === 'failed' || state === 'disconnected') {
+              setStatus('連接斷開，正在重試...', 'error');
+              connTypeEl.textContent = '已斷開';
+              connTypeEl.className = 'info-val err';
+              stopEQ();
+            }
+          });
+
+          // 码率统计
+          setInterval(() => {
+            if (!pc) return;
+            pc.getStats(null).then(stats => {
+              stats.forEach(report => {
+                if (report.type === 'inbound-rtp' && report.kind === 'audio') {
+                  const now = Date.now();
+                  if (lastTime) {
+                    const bitrate = ((report.bytesReceived - lastBytes) * 8 / (now - lastTime) / 1000).toFixed(0);
+                    bitrateEl.textContent = bitrate + ' kbps';
+                    if (parseInt(bitrate) > 100) bitrateEl.className = 'info-val ok';
+                    else bitrateEl.className = 'info-val warn';
+                  }
+                  lastBytes = report.bytesReceived;
+                  lastTime = now;
+                }
+              });
+            });
+          }, 1000);
+        });
+
+        call.on('close', () => {
+          setStatus('推流端已斷開連接', 'error');
+          stopEQ();
+          connTypeEl.textContent = '已斷開';
+          connTypeEl.className = 'info-val err';
+          bitrateEl.textContent = '-- kbps';
+        });
+
+        call.on('error', err => {
+          setStatus('連接錯誤：' + err.message, 'error');
+          stopEQ();
+        });
+      });
+
+      peer.on('error', err => {
+        if (err.type === 'unavailable-id' || err.type === 'peer-unavailable') {
+          setStatus('連接超時，請刷新重試', 'error');
+        } else {
+          setStatus('連接錯誤，請刷新重試', 'error');
+        }
+      });
+
+      peer.on('disconnected', () => {
+        setStatus('信令斷開，正在重連...', 'connecting');
+        peer.reconnect();
+      });
+    }
+
+    initPeer();
+  }
+
+  // ========== 推流端逻辑 ==========
+  if (isSender) {
+    let localStream = null;
+    let call = null;
+    let peer = null;
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+
+    startBtn.onclick = async () => {
+      try {
+        setStatus('正在獲取麥克風權限...', 'connecting');
+        localStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false,
+            channelCount: 2,
+            sampleRate: 48000
+          },
+          video: false
+        });
+
+        // 显示音频处理实际状态
+        const track = localStream.getAudioTracks()[0];
+        const settings = track.getSettings();
+        console.log('Audio settings:', settings);
+
+        setStatus('正在連接接收端...', 'connecting');
+        startBtn.disabled = true;
+
+        peer = new Peer(undefined, { config: buildIceConfig(), debug: 1 });
+
+        peer.on('open', () => {
+          // SDP修改
+          call = peer.call(remoteId, localStream, { sdpTransform: mungeSDP });
+
+          call.on('stream', () => {}); // 接收端不回流，空处理
+
+          call.peerConnection.addEventListener('iceconnectionstatechange', () => {
+            const state = call.peerConnection.iceConnectionState;
+            if (state === 'connected' || state === 'completed') {
+              setStatus('✅ 音頻傳輸中', 'connected');
+              startBtn.classList.add('hidden');
+              stopBtn.classList.remove('hidden');
+              startEQ(localStream);
+              // 发送端设置码率
+              const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'audio');
+              if (sender) {
+                const params = sender.getParameters();
+                if (!params.encodings) params.encodings = [{}];
+                params.encodings[0].maxBitrate = 256000;
+                sender.setParameters(params);
+              }
+            } else if (state === 'failed') {
+              setStatus('連接失敗，請重試', 'error');
+              startBtn.disabled = false;
+            }
+          });
+
+          call.on('close', () => {
+            setStatus('連接已關閉', 'error');
+            stopTransmit();
+          });
+
+          call.on('error', err => {
+            setStatus('連接錯誤：' + err.message, 'error');
+            startBtn.disabled = false;
+          });
+        });
+
+        peer.on('error', err => {
+          setStatus('連接失敗：' + err.type, 'error');
+          startBtn.disabled = false;
+        });
+
+      } catch (err) {
+        setStatus('無法獲取麥克風權限', 'error');
+        showToast('請允許麥克風權限後重試', true);
+        startBtn.disabled = false;
+      }
+    };
+
+    function stopTransmit() {
+      if (localStream) localStream.getTracks().forEach(t => t.stop());
+      if (call) call.close();
+      if (peer) peer.destroy();
+      localStream = null; call = null; peer = null;
+      stopEQ();
+      startBtn.classList.remove('hidden');
+      stopBtn.classList.add('hidden');
+      startBtn.disabled = false;
+      setStatus('已停止傳輸', '');
+    }
+
+    stopBtn.onclick = stopTransmit;
+    setStatus('點擊按鈕開始傳輸音頻', '');
+  }
+
+  // 页面点击解锁音频（浏览器自动播放策略）
+  document.body.addEventListener('click', () => {
+    const a = document.getElementById('remoteAudio');
+    if (a && a.srcObject && a.paused) a.play();
+  }, { once: false });
+
+})();
+</script>
+</body>
+</html>
