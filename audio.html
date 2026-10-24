@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高音質音頻串流 · 一對一實時傳輸</title>
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Noto Sans TC', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #4c1d95, #0f172a);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(139, 92, 246, 0.3);
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 520px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            padding: 40px 32px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 60px rgba(139, 92, 246, 0.15);
+            animation: cardFadeIn 0.8s ease-out;
+        }
+
+        @keyframes cardFadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .title {
+            text-align: center;
+            color: #fff;
+            font-size: 27px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #a78bfa, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            margin-bottom: 28px;
+        }
+
+        .visualizer-container {
+            position: relative;
+            width: 100%;
+            height: 180px;
+            margin: 0 auto 24px;
+            display: flex;
+            align-items: end;
+            justify-content: center;
+            gap: 6px;
+            padding: 0 20px;
+            border-radius: 16px;
+            background: rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .eq-bar {
+            flex: 1;
+            max-width: 12px;
+            border-radius: 6px 6px 2px 2px;
+            background: linear-gradient(to top, #8b5cf6, #3b82f6, #34d399);
+            height: 8px;
+            transition: height 0.08s ease-out;
+            box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
+            position: relative;
+        }
+
+        .eq-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 2px;
+            opacity: 0.6;
+        }
+
+        .visualizer-container.connected .eq-bar {
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
+            background: linear-gradient(to top, #10b981, #34d399, #6ee7b7);
+        }
+
+        .status {
+            text-align: center;
+            font-size: 15px;
+            margin-bottom: 20px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .status.waiting {
+            color: #93c5fd;
+            background: rgba(59, 130, 246, 0.1);
+            animation: breathe 2s ease-in-out infinite;
+        }
+
+        .status.connecting {
+            color: #fcd34d;
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .status.connected {
+            color: #6ee7b7;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .status.error {
+            color: #fca5a5;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        @keyframes breathe {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        /* 高保真模式开关 */
+        .music-mode {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 14px;
+            margin-bottom: 18px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .music-mode:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .music-mode input {
+            width: 18px;
+            height: 18px;
+            margin-top: 2px;
+            accent-color: #8b5cf6;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .music-mode .mm-text {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.88);
+            line-height: 1.45;
+        }
+
+        .music-mode .mm-text small {
+            display: block;
+            color: rgba(255, 255, 255, 0.45);
+            font-size: 11px;
+            margin-top: 3px;
+        }
+
+        /* 参数面板 */
+        .params {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .param-item {
+            background: rgba(0, 0, 0, 0.22);
+            border-radius: 10px;
+            padding: 8px 11px;
+            color: rgba(255, 255, 255, 0.62);
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .param-item b {
+            color: #6ee7b7;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .param-item.warn b {
+            color: #fbbf24;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 16px;
+            font-size: 17px;
+            font-weight: 600;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(139, 92, 246, 0.6);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(239, 68, 68, 0.6);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.4s, height 0.4s;
+        }
+
+        .btn:active::after {
+            width: 300px;
+            height: 300px;
+        }
+
+        .qrcode-section {
+            margin-top: 28px;
+            padding-top: 22px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .qrcode-title {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            padding: 16px;
+            background: #fff;
+            border-radius: 16px;
+            width: fit-content;
+            margin: 0 auto 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .link-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            word-break: break-all;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .link-box:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .copy-tip {
+            text-align: center;
+            color: #34d399;
+            font-size: 12px;
+            margin-top: 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .copy-tip.show {
+            opacity: 1;
+        }
+
+        .tip {
+            margin-top: 16px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: rgba(251, 191, 36, 0.08);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            color: rgba(253, 224, 71, 0.9);
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .toast {
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+            max-width: 90vw;
+            text-align: center;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                padding: 30px 20px;
+            }
+            .title {
+                font-size: 22px;
+            }
+            .visualizer-container {
+                height: 130px;
+                gap: 4px;
+            }
+            .eq-bar {
+                max-width: 8px;
+            }
+            .params {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <div class="card">
+            <h1 class="title">🎙️ 高音質音頻串流</h1>
+            <p class="subtitle" id="subtitle">一對一低延遲 · 音樂級音質</p>
+
+            <div class="visualizer-container" id="visualizerContainer">
+                <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+                <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+                <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+                <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+                <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+                <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+                <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+                <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+            </div>
+
+            <div class="status waiting" id="status">正在初始化連接...</div>
+
+            <div class="params hidden" id="paramsPanel">
+                <div class="param-item" id="pRate"><span>採樣率</span><b>--</b></div>
+                <div class="param-item" id="pChannel"><span>聲道</span><b>--</b></div>
+                <div class="param-item" id="pEcho"><span>迴聲消除</span><b>--</b></div>
+                <div class="param-item" id="pNoise"><span>降噪</span><b>--</b></div>
+                <div class="param-item" id="pGain"><span>自動增益</span><b>--</b></div>
+                <div class="param-item" id="pBitrate"><span>實時碼率</span><b>--</b></div>
+            </div>
+
+            <div id="senderControls" class="hidden">
+                <label class="music-mode" id="musicModeLabel">
+                    <input type="checkbox" id="musicMode">
+                    <span class="mm-text">
+                        高保真音樂模式（繞過系統降噪）
+                        <small>若關閉降噪後音樂仍發悶、發糊，請勾選此項</small>
+                    </span>
+                </label>
+                <button class="btn btn-primary" id="startBtn">
+                    <i class="fa fa-play"></i> 開始傳輸音頻
+                </button>
+                <button class="btn btn-danger hidden" id="stopBtn">
+                    <i class="fa fa-stop"></i> 停止傳輸
+                </button>
+            </div>
+
+            <div id="receiverSection" class="qrcode-section hidden">
+                <div class="qrcode-title">掃描二維碼 或 複製鏈接到手機打開</div>
+                <div id="qrcode"></div>
+                <div class="link-box" id="linkBox"></div>
+                <div class="copy-tip" id="copyTip">✅ 鏈接已複製</div>
+            </div>
+
+            <div class="tip hidden" id="sysTip">
+                💡 若上方「迴聲消除／降噪／自動增益」顯示為<b>開啟</b>，說明手機系統仍在處理音頻。<br>
+                小米手機請到「設定 → 聲音與振動 → 音效」或「通話降噪」中關閉 AI 降噪，音質會明顯提升。
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <audio id="audioPlayer" autoplay playsinline></audio>
+
+    <script>
+        // ===== 浮動粒子背景 =====
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 20; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.animationDelay = Math.random() * 20 + 's';
+            p.style.animationDuration = (15 + Math.random() * 10) + 's';
+            particlesContainer.appendChild(p);
+        }
+
+        // ===== 全局變量 =====
+        let peer = null;
+        let rawStream = null;
+        let sendStream = null;
+        let currentCall = null;
+        let audioContext = null;
+        let analyser = null;
+        let currentSource = null;
+        let animationId = null;
+        let statsTimer = null;
+        let webaudioCtx = null;
+
+        const eqBars = document.querySelectorAll('.eq-bar');
+        const visualizerContainer = document.getElementById('visualizerContainer');
+        const BAR_COUNT = eqBars.length;
+
+        const statusEl = document.getElementById('status');
+        const senderControls = document.getElementById('senderControls');
+        const receiverSection = document.getElementById('receiverSection');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const toastEl = document.getElementById('toast');
+        const paramsPanel = document.getElementById('paramsPanel');
+        const sysTip = document.getElementById('sysTip');
+        const musicModeEl = document.getElementById('musicMode');
+
+        function showToast(msg, duration = 2400) {
+            toastEl.textContent = msg;
+            toastEl.classList.add('show');
+            clearTimeout(toastEl._t);
+            toastEl._t = setTimeout(() => toastEl.classList.remove('show'), duration);
+        }
+
+        function setStatus(text, type) {
+            statusEl.textContent = text;
+            statusEl.className = 'status ' + type;
+        }
+
+        // ===================================================================
+        // 核心一：改寫 Opus 協商參數（讓 Opus 從「語音模式」切到「音樂模式」）
+        // ===================================================================
+        function tuneSdpForMusic(sdp) {
+            if (!sdp) return sdp;
+            const sep = sdp.indexOf('\r\n') !== -1 ? '\r\n' : '\n';
+            const lines = sdp.split(/\r\n|\n/);
+
+            // 找出 SDP 中 Opus 的 payload type
+            const opusPts = [];
+            lines.forEach(function (l) {
+                const m = l.match(/^a=rtpmap:(\d+)\s+opus\/48000(\/\d+)?/i);
+                if (m) opusPts.push(m[1]);
+            });
+            if (!opusPts.length) return sdp;
+
+            const KEEP = 'minptime=10;useinbandfec=1;stereo=1;sprop-stereo=1;maxaveragebitrate=256000;maxplaybackrate=48000;sprop-maxcapturerate=48000;usedtx=0';
+
+            const out = lines.map(function (l) {
+                const m = l.match(/^a=fmtp:(\d+)\s*(.*)$/i);
+                if (m && opusPts.indexOf(m[1]) !== -1) {
+                    // 清掉舊的 Opus 參數，避免重複衝突
+                    const rest = (m[2] || '').split(';')
+                        .map(function (s) { return s.trim(); })
+                        .filter(function (s) {
+                            if (!s) return false;
+                            return !/^(stereo|sprop-stereo|maxaveragebitrate|maxplaybackrate|sprop-maxcapturerate|usedtx|minptime|useinbandfec)\s*=/i.test(s);
+                        })
+                        .join(';');
+                    return 'a=fmtp:' + m[1] + ' ' + (rest ? rest + ';' : '') + KEEP;
+                }
+                return l;
+            });
+
+            return out.join(sep);
+        }
+
+        // 把改寫邏輯掛到 PeerConnection 上
+        function attachMusicSdp(conn) {
+            const pc = (conn && conn.peerConnection) ? conn.peerConnection
+                     : (conn && conn._negotiator && conn._negotiator._pc) ? conn._negotiator._pc
+                     : null;
+            if (!pc || pc.__musicTuned) return pc;
+            pc.__musicTuned = true;
+
+            // 1) 攔截 createOffer，讓協商用的 SDP 一開始就是音樂參數
+            const origCreateOffer = pc.createOffer.bind(pc);
+            pc.createOffer = function () {
+                return origCreateOffer.apply(null, arguments).then(function (offer) {
+                    if (offer && offer.sdp) offer.sdp = tuneSdpForMusic(offer.sdp);
+                    return offer;
+                });
+            };
+
+            // 2) 攔截 setLocalDescription，做最後一道保險
+            const origSLD = pc.setLocalDescription.bind(pc);
+            pc.setLocalDescription = function (desc) {
+                if (desc && desc.sdp) {
+                    desc = { type: desc.type, sdp: tuneSdpForMusic(desc.sdp) };
+                }
+                return origSLD(desc);
+            };
+
+            // 3) 連通後把發送端碼率上限也拉高
+            const boost = function () {
+                try {
+                    const senders = pc.getSenders ? pc.getSenders() : [];
+                    const sender = senders.filter(function (s) {
+                        return s.track && s.track.kind === 'audio';
+                    })[0];
+                    if (!sender) return;
+                    const p = sender.getParameters();
+                    if (!p.encodings || !p.encodings.length) p.encodings = [{}];
+                    p.encodings[0].maxBitrate = 256000;
+                    const r = sender.setParameters(p);
+                    if (r && r.catch) r.catch(function () {});
+                } catch (e) { /* 忽略 */ }
+            };
+            setTimeout(boost, 300);
+            setTimeout(boost, 1500);
+
+            return pc;
+        }
+
+        // ===================================================================
+        // 核心二：實時碼率監控（用來確認到底是不是「頻寬不夠」）
+        // ===================================================================
+        function startStatsMonitor(conn, direction) {
+            const pc = (conn && conn.peerConnection) ? conn.peerConnection
+                     : (conn && conn._negotiator && conn._negotiator._pc) ? conn._negotiator._pc
+                     : null;
+            if (!pc) return;
+            stopStatsMonitor();
+
+            let lastBytes = 0;
+            let lastTime = 0;
+
+            statsTimer = setInterval(function () {
+                pc.getStats().then(function (report) {
+                    let bytes = 0;
+                    report.forEach(function (r) {
+                        if (direction === 'out' && r.type === 'outbound-rtp' && r.kind === 'audio' && !r.isRemote) {
+                            bytes = r.bytesSent || 0;
+                        }
+                        if (direction === 'in' && r.type === 'inbound-rtp' && r.kind === 'audio' && !r.isRemote) {
+                            bytes = r.bytesReceived || 0;
+                        }
+                    });
+                    const now = performance.now();
+                    if (lastTime && bytes > 0) {
+                        const kbps = Math.round((bytes - lastBytes) * 8 / (now - lastTime));
+                        if (kbps >= 0 && kbps < 5000) setParam('pBitrate', kbps + ' kbps', false);
+                    }
+                    lastBytes = bytes;
+                    lastTime = now;
+                }).catch(function () {});
+            }, 1000);
+        }
+
+        function stopStatsMonitor() {
+            if (statsTimer) clearInterval(statsTimer);
+            statsTimer = null;
+        }
+
+        // ===================================================================
+        // 核心三：參數面板
+        // ===================================================================
+        function setParam(id, value, warn) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.querySelector('b').textContent = value;
+            el.className = 'param-item' + (warn ? ' warn' : '');
+        }
+
+        function renderSettings(settings) {
+            paramsPanel.classList.remove('hidden');
+            setParam('pRate', (settings.sampleRate || '--') + ' Hz', false);
+            setParam('pChannel', settings.channelCount === 2 ? '立體聲' : (settings.channelCount || '--') + ' 聲道', false);
+
+            const echo = settings.echoCancellation;
+            const noise = settings.noiseSuppression;
+            const gain = settings.autoGainControl;
+
+            setParam('pEcho', echo === undefined ? '未知' : (echo ? '開啟' : '關閉'), echo === true);
+            setParam('pNoise', noise === undefined ? '未知' : (noise ? '開啟' : '關閉'), noise === true);
+            setParam('pGain', gain === undefined ? '未知' : (gain ? '開啟' : '關閉'), gain === true);
+
+            if (echo === true || noise === true || gain === true) {
+                sysTip.classList.remove('hidden');
+            } else {
+                sysTip.classList.add('hidden');
+            }
+        }
+
+        // ===================================================================
+        // EQ 可視化
+        // ===================================================================
+        function initVisualizer(stream) {
+            if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            if (!analyser) analyser = audioContext.createAnalyser();
+            analyser.fftSize = 2048;
+            analyser.smoothingTimeConstant = 0.75;
+            analyser.minDecibels = -90;
+            analyser.maxDecibels = -20;
+
+            if (currentSource) {
+                try { currentSource.disconnect(); } catch (e) {}
+            }
+            currentSource = audioContext.createMediaStreamSource(stream);
+            currentSource.connect(analyser);
+
+            if (audioContext.state === 'suspended') {
+                audioContext.resume().catch(function () {});
+            }
+
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            const nyquist = audioContext.sampleRate / 2;
+            const maxHeight = visualizerContainer.offsetHeight - 8;
+
+            // 對數分頻：低頻窄、高頻寬，更接近人耳與播放器 EQ 的觀感
+            const F_MIN = 60;
+            const F_MAX = 16000;
+            const edges = [];
+            for (let i = 0; i <= BAR_COUNT; i++) {
+                const f = F_MIN * Math.pow(F_MAX / F_MIN, i / BAR_COUNT);
+                edges.push(Math.min(bufferLength - 1, Math.max(1, Math.round(f / nyquist * bufferLength))));
+            }
+
+            if (animationId) cancelAnimationFrame(animationId);
+            function draw() {
+                animationId = requestAnimationFrame(draw);
+                analyser.getByteFrequencyData(dataArray);
+                for (let i = 0; i < BAR_COUNT; i++) {
+                    let s = edges[i];
+                    let e = edges[i + 1];
+                    if (e <= s) e = s + 1;
+                    let sum = 0;
+                    for (let j = s; j < e; j++) sum += dataArray[j];
+                    const avg = sum / (e - s);
+                    const height = Math.max(8, Math.pow(avg / 255, 0.8) * maxHeight);
+                    eqBars[i].style.height = height + 'px';
+                }
+            }
+            draw();
+        }
+
+        function stopVisualizer() {
+            if (animationId) cancelAnimationFrame(animationId);
+            animationId = null;
+            eqBars.forEach(function (bar) { bar.style.height = '8px'; });
+            visualizerContainer.classList.remove('connected');
+        }
+
+        function idleAnimation() {
+            if (animationId) cancelAnimationFrame(animationId);
+            function idleDraw() {
+                animationId = requestAnimationFrame(idleDraw);
+                const time = Date.now() / 1000;
+                for (let i = 0; i < BAR_COUNT; i++) {
+                    const wave = Math.sin(time * 2 + i * 0.3) * 0.5 + 0.5;
+                    eqBars[i].style.height = (8 + wave * 20) + 'px';
+                }
+            }
+            idleDraw();
+        }
+
+        // ===================================================================
+        // 音頻採集：關閉語音專用處理，並可選用 Web Audio 繞過系統降噪
+        // ===================================================================
+        const HI_FI_CONSTRAINTS = {
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false,
+            channelCount: 2,
+            sampleRate: 48000,
+            latency: 0
+        };
+
+        async function captureAudio() {
+            let stream;
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ audio: HI_FI_CONSTRAINTS, video: false });
+            } catch (e) {
+                // 部分設備不接受精細約束，退回最寬鬆的寫法
+                stream = await navigator.mediaDevices.getUserMedia({
+                    audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+                    video: false
+                });
+            }
+            return stream;
+        }
+
+        // 用 Web Audio 重新構建一路乾淨的流，繞過瀏覽器/系統的語音處理鏈
+        async function rebuildStreamPure(stream) {
+            const AC = window.AudioContext || window.webkitAudioContext;
+            webaudioCtx = new AC({ sampleRate: 48000 });
+            const src = webaudioCtx.createMediaStreamSource(stream);
+            const gain = webaudioCtx.createGain();
+            gain.gain.value = 1.0;
+            const dest = webaudioCtx.createMediaStreamDestination();
+            src.connect(gain);
+            gain.connect(dest);
+            if (webaudioCtx.state === 'suspended') {
+                await webaudioCtx.resume();
+            }
+            return dest.stream;
+        }
+
+        // ===================================================================
+        // 主流程
+        // ===================================================================
+        window.addEventListener('load', function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const remoteId = urlParams.get('id');
+
+            if (!window.isSecureContext) {
+                setStatus('⚠️ 請用 HTTPS 打開（攝像頭/麥克風需要安全環境）', 'error');
+            }
+
+            const peerConfig = {
+                debug: 0,
+                config: {
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:stun1.l.google.com:19302' },
+                        { urls: 'stun:stun.qq.com:3478' }
+                    ]
+                }
+            };
+
+            if (remoteId) {
+                // ============ 發送端（手機） ============
+                document.getElementById('subtitle').textContent = '點擊按鈕開始傳輸音頻';
+                senderControls.classList.remove('hidden');
+                receiverSection.classList.add('hidden');
+
+                const peerId = 'audio-' + Math.random().toString(36).substr(2, 9);
+                peer = new Peer(peerId, peerConfig);
+
+                peer.on('open', function () {
+                    setStatus('✅ 就緒，點擊按鈕開始', 'waiting');
+                    startBtn.disabled = false;
+                });
+
+                peer.on('error', function (err) {
+                    console.error(err);
+                    if (err.type === 'peer-unavailable') {
+                        setStatus('❌ 接收端不在線，請回電腦端重新掃碼', 'error');
+                    } else {
+                        setStatus('❌ 連接錯誤: ' + err.type, 'error');
+                    }
+                    stopStream();
+                });
+
+                startBtn.addEventListener('click', async function () {
+                    startBtn.disabled = true;
+                    try {
+                        setStatus('🎤 正在獲取麥克風…', 'connecting');
+                        rawStream = await captureAudio();
+
+                        const track = rawStream.getAudioTracks()[0];
+                        if (!track) throw new Error('未取得麥克風音軌');
+                        const settings = track.getSettings ? track.getSettings() : {};
+                        renderSettings(settings);
+
+                        sendStream = rawStream;
+                        if (musicModeEl && musicModeEl.checked) {
+                            try {
+                                sendStream = await rebuildStreamPure(rawStream);
+                            } catch (e) {
+                                console.warn('高保真模式失敗，改用原始流', e);
+                                sendStream = rawStream;
+                                showToast('高保真模式不可用，已改用標準模式');
+                            }
+                        }
+
+                        setStatus('🔗 正在連接接收端…', 'connecting');
+                        currentCall = peer.call(remoteId, sendStream);
+                        const pc = attachMusicSdp(currentCall);
+
+                        currentCall.on('error', function () {
+                            setStatus('❌ 連接失敗，請重試', 'error');
+                            stopStream();
+                        });
+
+                        initVisualizer(sendStream);
+                        visualizerContainer.classList.add('connected');
+
+                        startBtn.classList.add('hidden');
+                        stopBtn.classList.remove('hidden');
+                        setStatus('🔊 音頻傳輸中…', 'connected');
+                        showToast('傳輸已開始');
+
+                        // 等 PC 連通後開始統計碼率
+                        setTimeout(function () {
+                            if (pc) startStatsMonitor(currentCall, 'out');
+                        }, 2000);
+
+                    } catch (err) {
+                        console.error(err);
+                        if (err.name === 'NotAllowedError') {
+                            setStatus('❌ 請允許麥克風權限', 'error');
+                            showToast('請在瀏覽器設定中開啟麥克風權限');
+                        } else if (err.name === 'NotReadableError') {
+                            setStatus('❌ 麥克風被其他程式佔用', 'error');
+                            showToast('請關閉其他錄音程式後重試');
+                        } else {
+                            setStatus('❌ 獲取音頻失敗: ' + err.message, 'error');
+                        }
+                        startBtn.disabled = false;
+                    }
+                });
+
+                stopBtn.addEventListener('click', function () {
+                    stopStream();
+                    setStatus('⏹️ 傳輸已停止，點擊按鈕重新開始', 'waiting');
+                    startBtn.classList.remove('hidden');
+                    startBtn.disabled = false;
+                    stopBtn.classList.add('hidden');
+                    showToast('傳輸已停止');
+                });
+
+                function stopStream() {
+                    if (currentCall) { try { currentCall.close(); } catch (e) {} }
+                    if (rawStream) rawStream.getTracks().forEach(function (t) { t.stop(); });
+                    if (webaudioCtx) { try { webaudioCtx.close(); } catch (e) {} }
+                    rawStream = null;
+                    sendStream = null;
+                    currentCall = null;
+                    webaudioCtx = null;
+                    stopStatsMonitor();
+                    stopVisualizer();
+                }
+
+            } else {
+                // ============ 接收端（電腦） ============
+                receiverSection.classList.remove('hidden');
+                senderControls.classList.add('hidden');
+                document.getElementById('subtitle').textContent = '等待手機連接';
+
+                const peerId = 'audio-' + Math.random().toString(36).substr(2, 9);
+                peer = new Peer(peerId, peerConfig);
+
+                peer.on('open', function () {
+                    setStatus('📱 請用手機掃碼連接', 'waiting');
+                    const inviteUrl = window.location.origin + window.location.pathname + '?id=' + peerId;
+
+                    new QRCode(document.getElementById('qrcode'), {
+                        text: inviteUrl,
+                        width: 180,
+                        height: 180,
+                        colorDark: '#1e1b4b',
+                        colorLight: '#ffffff',
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+
+                    document.getElementById('linkBox').textContent = inviteUrl;
+                    document.getElementById('linkBox').addEventListener('click', function () {
+                        navigator.clipboard.writeText(inviteUrl).then(function () {
+                            document.getElementById('copyTip').classList.add('show');
+                            setTimeout(function () {
+                                document.getElementById('copyTip').classList.remove('show');
+                            }, 2000);
+                        }).catch(function () {
+                            showToast('複製失敗，請手動選取');
+                        });
+                    });
+
+                    idleAnimation();
+                });
+
+                peer.on('call', function (call) {
+                    setStatus('📥 收到連接請求，正在接聽…', 'connecting');
+                    attachMusicSdp(call);
+                    call.answer();
+
+                    call.on('stream', function (remoteStream) {
+                        audioPlayer.srcObject = remoteStream;
+                        audioPlayer.volume = 1;
+                        audioPlayer.play().catch(function () {
+                            document.body.addEventListener('click', function () {
+                                audioPlayer.play().catch(function () {});
+                            }, { once: true });
+                            showToast('點擊頁面任意位置開始播放聲音');
+                        });
+
+                        paramsPanel.classList.remove('hidden');
+                        const rTrack = remoteStream.getAudioTracks()[0];
+                        if (rTrack && rTrack.getSettings) {
+                            const s = rTrack.getSettings();
+                            setParam('pRate', (s.sampleRate || '--') + ' Hz', false);
+                            setParam('pChannel', s.channelCount === 2 ? '立體聲' : (s.channelCount || '--') + ' 聲道', false);
+                        }
+
+                        initVisualizer(remoteStream);
+                        visualizerContainer.classList.add('connected');
+                        setStatus('🔊 已連接，正在播放音頻', 'connected');
+                        showToast('連接成功！');
+
+                        setTimeout(function () {
+                            startStatsMonitor(call, 'in');
+                        }, 2000);
+                    });
+
+                    call.on('close', function () {
+                        setStatus('📱 連接已斷開，等待重新連接', 'waiting');
+                        audioPlayer.srcObject = null;
+                        stopStatsMonitor();
+                        stopVisualizer();
+                        idleAnimation();
+                        showToast('連接已斷開');
+                    });
+
+                    call.on('error', function (err) {
+                        console.error(err);
+                        setStatus('❌ 連接出錯，請重試', 'error');
+                    });
+                });
+
+                peer.on('error', function (err) {
+                    console.error(err);
+                    setStatus('❌ 服務連接失敗，請刷新頁面重試', 'error');
+                });
+            }
+
+            idleAnimation();
+
+            window.addEventListener('beforeunload', function () {
+                if (rawStream) rawStream.getTracks().forEach(function (t) { t.stop(); });
+                if (webaudioCtx) { try { webaudioCtx.close(); } catch (e) {} }
+                if (peer) peer.destroy();
+            });
+        });
+
+        // 全域點擊解鎖音頻播放
+        document.body.addEventListener('click', function () {
+            if (audioContext && audioContext.state === 'suspended') {
+                audioContext.resume().catch(function () {});
+            }
+            if (audioPlayer.paused && audioPlayer.srcObject) {
+                audioPlayer.play().catch(function () {});
+            }
+        });
+    </script>
+</body>
+</html>
