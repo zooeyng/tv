@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>一對一音頻串流 · 跨網優化高音質版</title>
+<title>一對一音頻串流</title>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
@@ -277,8 +277,8 @@ h1 {
 <body>
 <div class="particles" id="particles"></div>
 <div class="container">
-  <h1>🎧 高音質音頻串流</h1>
-  <p class="subtitle">跨網路優化版 · P2P 低延遲 · 256kbps Opus 立體聲</p>
+  <h1>🎧 音頻串流</h1>
+  <p class="subtitle">256kbps Opus 立體聲</p>
 
   <!-- 接收端界面 -->
   <div id="receiver-panel" class="card" style="display:none;">
@@ -360,13 +360,7 @@ h1 {
       <button class="btn btn-secondary" id="save-turn" style="width:100%;">保存並重新連接</button>
     </div>
 
-    <div class="hint">
-      💡 <strong>連接說明：</strong><br>
-      1. 同一WiFi網絡優先P2P直連，延遲最低<br>
-      2. 跨不同外網時自動嘗試中繼轉發，可能增加幾十毫秒延遲<br>
-      3. 若長時間無法連接，請檢查網絡是否封鎖UDP端口，或使用自訂TURN伺服器<br>
-      4. 必須使用HTTPS或localhost打開才能正常調用麥克風
-    </div>
+
   </div>
 </div>
 
