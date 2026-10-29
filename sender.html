@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>音頻發送端（手機）</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            text-align: center;
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 8px;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        input[type="text"]:focus {
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+        
+        .btn-connect {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: #fff;
+        }
+        
+        .btn-connect:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(17, 153, 142, 0.3);
+        }
+        
+        .btn-disconnect {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            color: #fff;
+        }
+        
+        .btn-disconnect:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(235, 51, 73, 0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+        
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ff4444;
+        }
+        
+        .status-dot.connected {
+            background: #00C851;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .status-text {
+            font-size: 15px;
+        }
+        
+        .volume-container {
+            margin-top: 20px;
+        }
+        
+        .volume-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .volume-bar {
+            height: 30px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .volume-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00C851 0%, #ffbb33 50%, #ff4444 100%);
+            width: 0%;
+            transition: width 0.05s linear;
+            border-radius: 15px;
+        }
+        
+        .info-box {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 13px;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+        
+        .info-box strong {
+            color: #ffd700;
+        }
+        
+        .sample-rate {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 音頻發送端</h1>
+        <p class="subtitle">手機端 · 無壓縮PCM實時傳輸</p>
+        
+        <div class="card">
+            <div class="status-bar">
+                <div class="status-dot" id="statusDot"></div>
+                <div class="status-text" id="statusText">未連接</div>
+            </div>
+            
+            <div class="form-group">
+                <label>服務器地址</label>
+                <input type="text" id="serverUrl" placeholder="wss://你的公網IP:8443">
+            </div>
+            
+            <button class="btn btn-connect" id="connectBtn" onclick="startStream()">
+                🎙️ 開始連接並發送
+            </button>
+            <button class="btn btn-disconnect" id="disconnectBtn" onclick="stopStream()" disabled>
+                ⏹️ 停止發送
+            </button>
+        </div>
+        
+        <div class="card volume-container" id="volumeCard" style="display: none;">
+            <div class="volume-label">
+                <span>實時音量</span>
+                <span id="volumeValue">0%</span>
+            </div>
+            <div class="volume-bar">
+                <div class="volume-fill" id="volumeFill"></div>
+            </div>
+            <div style="margin-top: 15px; text-align: center;">
+                <span class="sample-rate" id="sampleRateInfo">採樣率: -</span>
+                <span class="sample-rate" id="channelInfo">聲道: -</span>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="info-box">
+                <strong>📱 使用說明：</strong><br>
+                1. 確保電腦端服務已啟動，且端口8443已映射到公網<br>
+                2. 輸入你的固網公網IP地址（格式：wss://IP:8443）<br>
+                3. 點擊「開始連接」，授予麥克風權限<br>
+                4. 瀏覽器證書警告請選擇「高級」→「繼續訪問」<br>
+                <br>
+                <strong>🎵 音頻規格：</strong><br>
+                原始16-bit PCM編碼，完全無壓縮，最高音質<br>
+                自動適配設備原生採樣率（44.1kHz/48kHz），立體聲
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let ws = null;
+        let audioContext = null;
+        let mediaStream = null;
+        let scriptNode = null;
+        let sourceNode = null;
+        let isStreaming = false;
+        
+        // 自動填充當前域名的服務器地址
+        window.addEventListener('load', () => {
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const defaultUrl = `${wsProtocol}//${window.location.host}`;
+            document.getElementById('serverUrl').value = defaultUrl;
+        });
+        
+        function updateStatus(text, connected) {
+            document.getElementById('statusText').textContent = text;
+            const dot = document.getElementById('statusDot');
+            if (connected) {
+                dot.classList.add('connected');
+            } else {
+                dot.classList.remove('connected');
+            }
+        }
+        
+        async function startStream() {
+            const serverUrl = document.getElementById('serverUrl').value.trim();
+            if (!serverUrl) {
+                alert('請輸入服務器地址');
+                return;
+            }
+            
+            document.getElementById('connectBtn').disabled = true;
+            updateStatus('正在連接服務器...', false);
+            
+            try {
+                // 連接WebSocket
+                ws = new WebSocket(serverUrl);
+                ws.binaryType = 'arraybuffer';
+                
+                ws.onopen = async () => {
+                    console.log('WebSocket已連接');
+                    ws.send('role:sender');
+                    updateStatus('已連接服務器，正在獲取麥克風權限...', true);
+                    
+                    try {
+                        // 請求麥克風權限，關閉所有處理效果，保留原始音頻
+                        mediaStream = await navigator.mediaDevices.getUserMedia({
+                            audio: {
+                                echoCancellation: false,
+                                noiseSuppression: false,
+                                autoGainControl: false,
+                                channelCount: 2,
+                                sampleRate: 48000
+                            },
+                            video: false
+                        });
+                        
+                        // 創建音頻上下文，使用原生採樣率避免重採樣損失
+                        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        const sampleRate = audioContext.sampleRate;
+                        console.log('音頻採樣率:', sampleRate);
+                        
+                        document.getElementById('sampleRateInfo').textContent = `採樣率: ${sampleRate}Hz`;
+                        
+                        sourceNode = audioContext.createMediaStreamSource(mediaStream);
+                        
+                        // 獲取聲道數信息
+                        const audioTracks = mediaStream.getAudioTracks();
+                        const channelCount = audioTracks[0].getSettings().channelCount || audioContext.destination.channelCount || 2;
+                        document.getElementById('channelInfo').textContent = `聲道: ${channelCount === 2 ? '立體聲' : '單聲道'}`;
+                        
+                        // 發送初始化參數
+                        ws.send(JSON.stringify({
+                            type: 'init',
+                            sampleRate: sampleRate,
+                            channels: channelCount
+                        }));
+                        
+                        // 使用ScriptProcessorNode採集音頻（4096緩衝區，兼顧延遲與穩定性）
+                        // 注意：儘管已廢棄，但目前仍是唯一可靠的獲取原始PCM的方式
+                        scriptNode = audioContext.createScriptProcessor(4096, channelCount, channelCount);
+                        
+                        scriptNode.onaudioprocess = (e) => {
+                            if (!isStreaming || ws.readyState !== WebSocket.OPEN) return;
+                            
+                            // 獲取輸入數據
+                            const inputBuffer = e.inputBuffer;
+                            const channels = inputBuffer.numberOfChannels;
+                            const length = inputBuffer.length;
+                            
+                            // 轉換為16-bit PCM
+                            const pcmData = new Int16Array(length * channels);
+                            let volume = 0;
+                            let offset = 0;
+                            
+                            for (let i = 0; i < length; i++) {
+                                for (let ch = 0; ch < channels; ch++) {
+                                    const sample = inputBuffer.getChannelData(ch)[i];
+                                    // Float32 [-1, 1] 轉 Int16 [-32768, 32767]
+                                    const intSample = Math.max(-1, Math.min(1, sample)) * 32767;
+                                    pcmData[offset++] = intSample < 0 ? intSample - 0.5 : intSample + 0.5 | 0;
+                                    
+                                    // 計算音量
+                                    volume += Math.abs(sample);
+                                }
+                            }
+                            
+                            // 發送二進制數據
+                            ws.send(pcmData.buffer);
+                            
+                            // 更新音量顯示
+                            const avgVolume = volume / (length * channels);
+                            const volumePercent = Math.min(100, avgVolume * 200);
+                            document.getElementById('volumeFill').style.width = volumePercent + '%';
+                            document.getElementById('volumeValue').textContent = Math.round(volumePercent) + '%';
+                        };
+                        
+                        sourceNode.connect(scriptNode);
+                        // 不連接到destination，避免手機端自己播放出來造成嘯叫
+                        // scriptNode.connect(audioContext.destination);
+                        
+                        isStreaming = true;
+                        document.getElementById('volumeCard').style.display = 'block';
+                        document.getElementById('disconnectBtn').disabled = false;
+                        updateStatus('✅ 正在發送音頻...', true);
+                        
+                    } catch (micErr) {
+                        console.error('麥克風訪問失敗:', micErr);
+                        updateStatus('❌ 麥克風權限被拒絕', false);
+                        alert('無法訪問麥克風，請確保已授予權限，並使用HTTPS訪問');
+                        ws.close();
+                        document.getElementById('connectBtn').disabled = false;
+                    }
+                };
+                
+                ws.onmessage = (event) => {
+                    if (typeof event.data === 'string') {
+                        const msg = JSON.parse(event.data);
+                        if (msg.type === 'status') {
+                            console.log('狀態更新:', msg);
+                        }
+                    }
+                };
+                
+                ws.onerror = (err) => {
+                    console.error('WebSocket錯誤:', err);
+                    updateStatus('❌ 連接失敗，請檢查地址和網絡', false);
+                    document.getElementById('connectBtn').disabled = false;
+                };
+                
+                ws.onclose = () => {
+                    console.log('WebSocket已斷開');
+                    isStreaming = false;
+                    if (mediaStream) {
+                        mediaStream.getTracks().forEach(track => track.stop());
+                    }
+                    if (scriptNode && sourceNode) {
+                        sourceNode.disconnect();
+                        scriptNode.disconnect();
+                    }
+                    if (audioContext) {
+                        audioContext.close();
+                    }
+                    updateStatus('已斷開連接', false);
+                    document.getElementById('connectBtn').disabled = false;
+                    document.getElementById('disconnectBtn').disabled = true;
+                    document.getElementById('volumeCard').style.display = 'none';
+                };
+                
+            } catch (err) {
+                console.error('連接失敗:', err);
+                updateStatus('❌ 連接失敗', false);
+                alert('連接失敗: ' + err.message);
+                document.getElementById('connectBtn').disabled = false;
+            }
+        }
+        
+        function stopStream() {
+            if (ws) {
+                ws.close();
+            }
+            isStreaming = false;
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+            }
+            if (scriptNode && sourceNode) {
+                sourceNode.disconnect();
+                scriptNode.disconnect();
+            }
+            if (audioContext) {
+                audioContext.close();
+            }
+        }
+        
+        // 頁面關閉時清理資源
+        window.addEventListener('beforeunload', stopStream);
+    </script>
+</body>
+</html>

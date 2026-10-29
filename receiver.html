@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音頻接收端（電腦）</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #fff;
+        }
+        
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            text-align: center;
+            font-size: 16px;
+            opacity: 0.85;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(15px);
+            border-radius: 24px;
+            padding: 35px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        
+        .status-section {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .status-item {
+            flex: 1;
+            min-width: 200px;
+            padding: 20px;
+            border-radius: 16px;
+            background: rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        
+        .status-item-label {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 8px;
+        }
+        
+        .status-item-value {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .status-dot-large {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #ff4444;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        
+        .status-dot-large.connected {
+            background: #00C851;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0, 200, 81, 0.7); }
+            50% { opacity: 0.8; box-shadow: 0 0 0 10px rgba(0, 200, 81, 0); }
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            font-size: 15px;
+            margin-bottom: 10px;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            font-size: 16px;
+            outline: none;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+        
+        input[type="text"]:focus {
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn {
+            padding: 18px 40px;
+            border: none;
+            border-radius: 14px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .btn-connect {
+            background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);
+            color: #fff;
+        }
+        
+        .btn-connect:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0, 176, 155, 0.3);
+        }
+        
+        .btn-disconnect {
+            background: linear-gradient(135deg, #cb2d3e 0%, #ef473a 100%);
+            color: #fff;
+        }
+        
+        .btn-disconnect:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(203, 45, 62, 0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .volume-container {
+            margin-top: 30px;
+        }
+        
+        .volume-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+        
+        .volume-bar {
+            height: 40px;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .volume-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00C851 0%, #ffbb33 40%, #ff4444 80%, #aa00ff 100%);
+            width: 0%;
+            transition: width 0.05s linear;
+            border-radius: 20px;
+        }
+        
+        .waveform {
+            height: 120px;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 16px;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .waveform-canvas {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .audio-info {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .audio-tag {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .latency {
+            color: #ffd700;
+        }
+        
+        .info-box {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+            padding: 25px;
+            font-size: 14px;
+            line-height: 1.8;
+            opacity: 0.92;
+        }
+        
+        .info-box strong {
+            color: #ffd700;
+            font-size: 16px;
+        }
+        
+        .info-box ol {
+            padding-left: 20px;
+            margin-top: 10px;
+        }
+        
+        .info-box li {
+            margin-bottom: 8px;
+        }
+        
+        .warning {
+            background: rgba(255, 68, 68, 0.2);
+            border-left: 4px solid #ff4444;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔊 音頻接收端</h1>
+        <p class="subtitle">電腦端 · 無壓縮PCM實時播放</p>
+        
+        <div class="card">
+            <div class="status-section">
+                <div class="status-item">
+                    <div class="status-item-label">服務器狀態</div>
+                    <div class="status-item-value">
+                        <span class="status-dot-large" id="wsStatusDot"></span>
+                        <span id="wsStatus">未啟動</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-item-label">發送端狀態</div>
+                    <div class="status-item-value">
+                        <span class="status-dot-large" id="senderStatusDot"></span>
+                        <span id="senderStatus">未連接</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-item-label">延遲</div>
+                    <div class="status-item-value latency" id="latencyValue">-- ms</div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>本地服務器地址</label>
+                <input type="text" id="serverUrl" placeholder="ws://localhost:8080">
+            </div>
+            
+            <button class="btn btn-connect" id="connectBtn" onclick="startReceive()">
+                🎧 啟動接收並播放
+            </button>
+            <button class="btn btn-disconnect" id="disconnectBtn" onclick="stopReceive()" disabled>
+                ⏹️ 停止接收
+            </button>
+            
+            <div class="volume-container" id="playbackCard" style="display: none;">
+                <div class="volume-label">
+                    <span>播放音量電平</span>
+                    <span id="volumeValue">0%</span>
+                </div>
+                <div class="volume-bar">
+                    <div class="volume-fill" id="volumeFill"></div>
+                </div>
+                
+                <div class="waveform">
+                    <canvas class="waveform-canvas" id="waveformCanvas"></canvas>
+                </div>
+                
+                <div class="audio-info">
+                    <span class="audio-tag" id="sampleRateTag">採樣率: -</span>
+                    <span class="audio-tag" id="bitDepthTag">位深: 16-bit</span>
+                    <span class="audio-tag" id="channelTag">聲道: -</span>
+                    <span class="audio-tag" id="bitrateTag">碼率: -</span>
+                    <span class="audio-tag" id="encodingTag">編碼: 無壓縮PCM</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="info-box">
+                <strong>💻 部署與使用說明</strong>
+                <ol>
+                    <li>在這台電腦上運行服務：打開命令提示符，進入項目文件夾，執行 <code>npm install && npm start</code></li>
+                    <li>在路由器上設置端口映射：將外網8443端口映射到本機的8443端口</li>
+                    <li>查詢你的固網公網IP，可以在百度搜索「IP」即可看到</li>
+                    <li>手機連接移動網絡（不要連同一WiFi），打開 <code>https://你的公網IP:8443/sender.html</code></li>
+                    <li>手機端點擊連接，授予麥克風權限，即可實時傳輸音樂</li>
+                    <li>電腦端點擊「啟動接收並播放」，即可聽到無壓縮音頻</li>
+                </ol>
+                
+                <div class="warning">
+                    ⚠️ <strong>重要提示：</strong>由於瀏覽器安全限制，手機端必須使用HTTPS才能訪問麥克風。首次訪問時會提示證書不受信任，這是因為我們使用了自簽名證書，請點擊「高級」→「繼續訪問」即可，不影響音頻質量和安全性。
+                </div>
+                
+                <br>
+                <strong>🎵 音頻質量說明：</strong><br>
+                完全未經任何壓縮編碼，原始16-bit PCM數據直傳，音質等同CD級別以上，沒有任何編碼損耗，適合傳輸高保真音樂。自動適配手機原生採樣率（通常48kHz），立體聲傳輸，碼率約1.5Mbps，移動網絡完全可以勝任。
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let ws = null;
+        let audioContext = null;
+        let scriptNode = null;
+        let isPlaying = false;
+        let audioQueue = [];
+        let sampleRate = 48000;
+        let channels = 2;
+        let nextStartTime = 0;
+        let canvasCtx = null;
+        let waveformData = new Float32Array(1024);
+        
+        // 自動填充本地地址
+        window.addEventListener('load', () => {
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const defaultUrl = `${wsProtocol}//${window.location.host}`;
+            document.getElementById('serverUrl').value = defaultUrl;
+            
+            // 初始化畫布
+            const canvas = document.getElementById('waveformCanvas');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            canvasCtx = canvas.getContext('2d');
+            drawIdleWaveform();
+            
+            window.addEventListener('resize', () => {
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+            });
+        });
+        
+        function updateWsStatus(text, connected) {
+            document.getElementById('wsStatus').textContent = text;
+            const dot = document.getElementById('wsStatusDot');
+            if (connected) dot.classList.add('connected');
+            else dot.classList.remove('connected');
+        }
+        
+        function updateSenderStatus(text, connected) {
+            document.getElementById('senderStatus').textContent = text;
+            const dot = document.getElementById('senderStatusDot');
+            if (connected) dot.classList.add('connected');
+            else dot.classList.remove('connected');
+        }
+        
+        function drawIdleWaveform() {
+            if (!canvasCtx) return;
+            const w = canvasCtx.canvas.width;
+            const h = canvasCtx.canvas.height;
+            
+            canvasCtx.fillStyle = 'rgba(0,0,0,0)';
+            canvasCtx.clearRect(0, 0, w, h);
+            
+            canvasCtx.strokeStyle = 'rgba(255,255,255,0.3)';
+            canvasCtx.lineWidth = 2;
+            canvasCtx.beginPath();
+            canvasCtx.moveTo(0, h/2);
+            canvasCtx.lineTo(w, h/2);
+            canvasCtx.stroke();
+        }
+        
+        function drawWaveform(pcmData) {
+            if (!canvasCtx) return;
+            const w = canvasCtx.canvas.width;
+            const h = canvasCtx.canvas.height;
+            const center = h / 2;
+            
+            canvasCtx.clearRect(0, 0, w, h);
+            
+            // 背景中線
+            canvasCtx.strokeStyle = 'rgba(255,255,255,0.1)';
+            canvasCtx.lineWidth = 1;
+            canvasCtx.beginPath();
+            canvasCtx.moveTo(0, center);
+            canvasCtx.lineTo(w, center);
+            canvasCtx.stroke();
+            
+            // 波形
+            canvasCtx.strokeStyle = 'rgba(0, 255, 136, 0.9)';
+            canvasCtx.lineWidth = 2;
+            canvasCtx.beginPath();
+            
+            const step = Math.ceil(pcmData.length / w);
+            for (let i = 0; i < w; i++) {
+                const idx = i * step;
+                let max = 0;
+                for (let j = 0; j < step && idx + j < pcmData.length; j++) {
+                    const sample = Math.abs(pcmData[idx + j]) / 32768;
+                    if (sample > max) max = sample;
+                }
+                const y = center - max * center * 0.9;
+                const y2 = center + max * center * 0.9;
+                
+                if (i === 0) {
+                    canvasCtx.moveTo(i, y);
+                } else {
+                    canvasCtx.lineTo(i, y);
+                }
+                canvasCtx.lineTo(i, y2);
+            }
+            canvasCtx.stroke();
+        }
+        
+        async function startReceive() {
+            const serverUrl = document.getElementById('serverUrl').value.trim();
+            if (!serverUrl) {
+                alert('請輸入服務器地址');
+                return;
+            }
+            
+            document.getElementById('connectBtn').disabled = true;
+            updateWsStatus('正在連接...', false);
+            
+            try {
+                // 必須先有用戶交互才能創建AudioContext（瀏覽器自動播放政策）
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                ws = new WebSocket(serverUrl);
+                ws.binaryType = 'arraybuffer';
+                
+                ws.onopen = () => {
+                    console.log('WebSocket已連接');
+                    ws.send('role:receiver');
+                    updateWsStatus('已連接，等待發送端', true);
+                    document.getElementById('disconnectBtn').disabled = false;
+                    document.getElementById('playbackCard').style.display = 'block';
+                };
+                
+                ws.onmessage = async (event) => {
+                    if (typeof event.data === 'string') {
+                        const msg = JSON.parse(event.data);
+                        if (msg.type === 'init') {
+                            // 收到發送端的音頻參數
+                            sampleRate = msg.sampleRate;
+                            channels = msg.channels;
+                            console.log('音頻參數:', sampleRate, channels);
+                            
+                            // 如果採樣率不匹配，關閉重建（避免重採樣損耗）
+                            if (audioContext.sampleRate !== sampleRate) {
+                                await audioContext.close();
+                                audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: sampleRate });
+                            }
+                            
+                            document.getElementById('sampleRateTag').textContent = `採樣率: ${sampleRate}Hz`;
+                            document.getElementById('channelTag').textContent = `聲道: ${channels === 2 ? '立體聲' : '單聲道'}`;
+                            const bitrate = (sampleRate * channels * 16 / 1000).toFixed(0);
+                            document.getElementById('bitrateTag').textContent = `碼率: ${bitrate}kbps`;
+                            
+                            updateSenderStatus('已連接，正在播放', true);
+                            isPlaying = true;
+                        } else if (msg.type === 'status') {
+                            if (msg.senderConnected) {
+                                if (!isPlaying) {
+                                    updateSenderStatus('發送端已連接，等待音頻', true);
+                                }
+                            } else {
+                                updateSenderStatus('已斷開', false);
+                                isPlaying = false;
+                                audioQueue = [];
+                            }
+                        }
+                    } else {
+                        // 二進制音頻數據
+                        if (!isPlaying) return;
+                        
+                        const pcmInt16 = new Int16Array(event.data);
+                        const frameCount = pcmInt16.length / channels;
+                        
+                        // 創建AudioBuffer
+                        const audioBuffer = audioContext.createBuffer(channels, frameCount, sampleRate);
+                        
+                        let volume = 0;
+                        
+                        // 分離聲道並轉換回Float32
+                        for (let ch = 0; ch < channels; ch++) {
+                            const channelData = audioBuffer.getChannelData(ch);
+                            for (let i = 0; i < frameCount; i++) {
+                                const sample = pcmInt16[i * channels + ch] / 32768;
+                                channelData[i] = sample;
+                                volume += Math.abs(sample);
+                            }
+                        }
+                        
+                        // 播放音頻，精確調度避免斷續
+                        const bufferSource = audioContext.createBufferSource();
+                        bufferSource.buffer = audioBuffer;
+                        bufferSource.connect(audioContext.destination);
+                        
+                        // 計算播放時間，保證連續無間隙
+                        const currentTime = audioContext.currentTime;
+                        if (nextStartTime < currentTime) {
+                            nextStartTime = currentTime + 0.05; // 初始50ms緩衝
+                        }
+                        
+                        bufferSource.start(nextStartTime);
+                        const duration = frameCount / sampleRate;
+                        nextStartTime += duration;
+                        
+                        // 更新音量
+                        const avgVolume = volume / pcmInt16.length;
+                        const volumePercent = Math.min(100, avgVolume * 200);
+                        document.getElementById('volumeFill').style.width = volumePercent + '%';
+                        document.getElementById('volumeValue').textContent = Math.round(volumePercent) + '%';
+                        
+                        // 計算延遲
+                        const latency = (nextStartTime - audioContext.currentTime) * 1000;
+                        document.getElementById('latencyValue').textContent = Math.round(latency) + ' ms';
+                        
+                        // 繪製波形
+                        drawWaveform(pcmInt16);
+                        
+                        // 清理過期的bufferSource
+                        bufferSource.onended = () => {
+                            bufferSource.disconnect();
+                        };
+                    }
+                };
+                
+                ws.onerror = (err) => {
+                    console.error('WebSocket錯誤:', err);
+                    updateWsStatus('❌ 連接失敗', false);
+                    alert('連接失敗，請確保服務已啟動');
+                    document.getElementById('connectBtn').disabled = false;
+                };
+                
+                ws.onclose = () => {
+                    console.log('WebSocket已斷開');
+                    isPlaying = false;
+                    audioQueue = [];
+                    if (audioContext) {
+                        audioContext.close();
+                    }
+                    updateWsStatus('已斷開', false);
+                    updateSenderStatus('未連接', false);
+                    document.getElementById('connectBtn').disabled = false;
+                    document.getElementById('disconnectBtn').disabled = true;
+                    document.getElementById('playbackCard').style.display = 'none';
+                    document.getElementById('latencyValue').textContent = '-- ms';
+                    drawIdleWaveform();
+                };
+                
+            } catch (err) {
+                console.error('啟動失敗:', err);
+                alert('啟動失敗: ' + err.message);
+                document.getElementById('connectBtn').disabled = false;
+            }
+        }
+        
+        function stopReceive() {
+            if (ws) {
+                ws.close();
+            }
+            isPlaying = false;
+            audioQueue = [];
+            if (audioContext) {
+                audioContext.close();
+            }
+        }
+        
+        window.addEventListener('beforeunload', stopReceive);
+    </script>
+</body>
+</html>
