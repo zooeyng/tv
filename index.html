@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AudioRelay 網頁版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", "Microsoft JhengHei", sans-serif;
+        }
+        body {
+            background: #f0f0f0;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+            color: #202020;
+        }
+        /* 左側邊欄 */
+        .sidebar {
+            width: 200px;
+            background: #ffffff;
+            border-right: 1px solid #e0e0e0;
+            padding-top: 16px;
+        }
+        .sidebar-item {
+            padding: 16px 24px;
+            font-size: 17px;
+            cursor: pointer;
+            border-left: 4px solid transparent;
+            transition: all 0.15s;
+        }
+        .sidebar-item.active {
+            border-left-color: #0099ff;
+            color: #0099ff;
+            font-weight: 500;
+        }
+        .sidebar-item:hover:not(.active) {
+            background: #f5f5f5;
+        }
+        /* 右側內容區 */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px;
+            background: #f0f0f0;
+        }
+        /* 卡片樣式，和截圖一致 */
+        .card {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 28px;
+            margin-bottom: 28px;
+            max-width: 650px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .card-title {
+            font-size: 26px;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        .card-subtitle {
+            font-size: 16px;
+            color: #707070;
+            margin-bottom: 24px;
+        }
+        .close-btn {
+            float: right;
+            font-size: 24px;
+            cursor: pointer;
+            color: #707070;
+            line-height: 1;
+        }
+        .close-btn:hover {
+            color: #202020;
+        }
+        /* 選項行 */
+        .option-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 16px 0;
+            cursor: pointer;
+        }
+        .option-icon {
+            font-size: 28px;
+            margin-right: 16px;
+            color: #505050;
+            width: 36px;
+            text-align: center;
+        }
+        .option-title {
+            font-size: 19px;
+            margin-bottom: 4px;
+        }
+        .option-desc {
+            font-size: 15px;
+            color: #606060;
+            line-height: 1.5;
+        }
+        .option-note {
+            font-size: 15px;
+            color: #0078d4;
+            margin-top: 6px;
+        }
+        .action-btn-wrapper {
+            text-align: right;
+            margin-top: 8px;
+        }
+        .btn {
+            padding: 10px 24px;
+            border: 1px solid #d0d0d0;
+            background: #ffffff;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            color: #0078d4;
+        }
+        .btn:hover {
+            background: #f5f5f5;
+        }
+        .btn.primary {
+            background: #0078d4;
+            color: white;
+            border-color: #0078d4;
+        }
+        .btn.primary:hover {
+            background: #0067b8;
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        /* IP連線區塊 */
+        .connect-section {
+            margin-top: 36px;
+        }
+        .connect-title {
+            font-size: 24px;
+            font-weight: 400;
+            margin-bottom: 10px;
+        }
+        .connect-desc {
+            font-size: 16px;
+            color: #707070;
+            margin-bottom: 20px;
+        }
+        .connect-row {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+        .ip-input {
+            flex: 1;
+            padding: 16px 14px;
+            font-size: 18px;
+            border: 1px solid #c0c0c0;
+            border-radius: 4px;
+            max-width: 320px;
+        }
+        .ip-input:focus {
+            outline: none;
+            border-color: #0078d4;
+        }
+        /* 伺服器資訊卡片 */
+        .server-card-item {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border-radius: 6px;
+            background: #fafafa;
+            margin-top: 16px;
+        }
+        .server-icon {
+            font-size: 32px;
+            margin-right: 20px;
+            color: #505050;
+        }
+        .server-info {
+            flex: 1;
+        }
+        .server-name {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .server-ip {
+            font-size: 16px;
+            color: #606060;
+        }
+        .server-arrow {
+            font-size: 20px;
+            color: #606060;
+        }
+        /* 右側設定面板 */
+        .settings-panel {
+            position: fixed;
+            right: 32px;
+            top: 32px;
+            width: 320px;
+        }
+        .setting-card {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .setting-title {
+            font-size: 24px;
+            font-weight: 400;
+            margin-bottom: 20px;
+        }
+        .radio-item {
+            margin-bottom: 24px;
+            cursor: pointer;
+        }
+        .radio-item:last-child {
+            margin-bottom: 0;
+        }
+        .radio-circle {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #c0c0c0;
+            border-radius: 50%;
+            margin-right: 12px;
+            vertical-align: middle;
+            position: relative;
+        }
+        .radio-item.checked .radio-circle {
+            border-color: #00bcf2;
+        }
+        .radio-item.checked .radio-circle::after {
+            content: "";
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #00bcf2;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+        }
+        .radio-title {
+            font-size: 20px;
+            font-weight: 600;
+            vertical-align: middle;
+        }
+        .radio-desc {
+            font-size: 16px;
+            color: #606060;
+            margin-top: 6px;
+            margin-left: 32px;
+            line-height: 1.5;
+        }
+        .radio-note {
+            font-size: 16px;
+            color: #606060;
+            margin-top: 6px;
+            margin-left: 32px;
+            line-height: 1.5;
+        }
+        .radio-note a {
+            color: #0078d4;
+            text-decoration: none;
+        }
+        .select-item {
+            margin-top: 24px;
+        }
+        .select-label {
+            font-size: 20px;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        .select-desc {
+            font-size: 16px;
+            color: #606060;
+            margin-bottom: 16px;
+        }
+        .select-control {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 0;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .select-value {
+            font-size: 16px;
+        }
+        .select-arrow {
+            color: #606060;
+            font-size: 18px;
+        }
+        /* 狀態提示 */
+        .status-bar {
+            padding: 12px 20px;
+            margin: 16px 0;
+            border-radius: 4px;
+            font-size: 15px;
+            display: none;
+        }
+        .status-bar.connected {
+            background: #dff6dd;
+            color: #107c10;
+            display: block;
+        }
+        .status-bar.connecting {
+            background: #fff4ce;
+            color: #d83b01;
+            display: block;
+        }
+        .status-bar.error {
+            background: #fde7e9;
+            color: #d13438;
+            display: block;
+        }
+        /* 音量表 */
+        .meter-container {
+            margin-top: 20px;
+            display: none;
+        }
+        .meter-container.active {
+            display: block;
+        }
+        .meter-label {
+            font-size: 15px;
+            color: #606060;
+            margin-bottom: 8px;
+        }
+        .meter-bar {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .meter-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #00cc00 0%, #ffcc00 70%, #ff3300 100%);
+            transition: width 0.05s linear;
+        }
+        /* 設定頁面 */
+        .setting-row {
+            margin-bottom: 24px;
+        }
+        .setting-row label {
+            display: block;
+            font-size: 17px;
+            margin-bottom: 8px;
+        }
+        .setting-row select, .setting-row input {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 16px;
+            border: 1px solid #c0c0c0;
+            border-radius: 4px;
+            max-width: 400px;
+        }
+        /* 伺服器頁面 */
+        .server-start-btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        .server-status {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 6px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .server-status.running {
+            background: #dff6dd;
+            color: #107c10;
+        }
+        .server-status.stopped {
+            background: #f5f5f5;
+            color: #606060;
+        }
+        /* 響應式手機版 */
+        @media (max-width: 900px) {
+            .settings-panel {
+                position: static;
+                width: 100%;
+                margin-top: 28px;
+            }
+            .content {
+                padding: 20px;
+            }
+            .sidebar {
+                width: 120px;
+            }
+            .sidebar-item {
+                padding: 14px 16px;
+                font-size: 15px;
+            }
+        }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+        .divider {
+            height: 1px;
+            background: #e0e0e0;
+            margin: 16px 0;
+        }
+        .info-text {
+            font-size: 15px;
+            color: #606060;
+            line-height: 1.6;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 左側導航欄 -->
+    <div class="sidebar">
+        <div style="padding: 0 20px 20px; font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+            <span style="color: #0078d4; font-size: 22px;">🔊</span> AudioRelay
+        </div>
+        <div class="sidebar-item active" data-page="server">伺服器</div>
+        <div class="sidebar-item" data-page="player">播放器</div>
+        <div class="sidebar-item" data-page="settings">設定</div>
+    </div>
+
+    <!-- 主內容區 -->
+    <div class="content">
+        <!-- 播放器頁面（預設打開這個，和截圖一致） -->
+        <div class="page active" id="page-player">
+            <div class="card">
+                <span class="close-btn" onclick="hidePlayerIntro()">×</span>
+                <div class="card-title">播放器</div>
+                <div class="card-subtitle">接收其他設備的音訊</div>
+                <div class="divider"></div>
+
+                <div class="option-item" id="opt-playback" onclick="selectMode('playback')">
+                    <div class="option-icon">🔊</div>
+                    <div>
+                        <div class="option-title">接收音訊</div>
+                        <div class="option-desc">播放其他設備上的音訊</div>
+                    </div>
+                </div>
+
+                <div class="option-item" id="opt-mic" onclick="selectMode('mic')">
+                    <div class="option-icon">🎙️</div>
+                    <div>
+                        <div class="option-title">接收麥克風輸入</div>
+                        <div class="option-desc">將其他設備當成麥克風輸入</div>
+                        <div class="option-note">需要虛擬音訊裝置（網頁版目前僅支援直接播放）</div>
+                    </div>
+                </div>
+
+                <div class="action-btn-wrapper">
+                    <button class="btn" onclick="window.open('https://docs.audiorelay.net/', '_blank')">操作說明 <span style="font-size: 14px;">↗</span></button>
+                </div>
+            </div>
+
+            <!-- IP連線區塊 -->
+            <div class="card" style="background: transparent; box-shadow: none; padding: 0;">
+                <div class="connect-title">透過 IP 位址連線</div>
+                <div class="connect-desc">IP 位置或主機名稱</div>
+                
+                <div id="status-bar" class="status-bar"></div>
+
+                <div class="connect-row">
+                    <input type="text" class="ip-input" id="server-ip" placeholder="範例：192.168.15.57 或你的公網IP">
+                    <button class="btn primary" id="connect-btn" onclick="connectServer()">連線</button>
+                </div>
+
+                <div class="meter-container" id="meter-container">
+                    <div class="meter-label">接收音量</div>
+                    <div class="meter-bar">
+                        <div class="meter-fill" id="meter-fill"></div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <div class="connect-title">伺服器</div>
+                    <div class="server-card-item" id="discovered-server" style="display: none;">
+                        <div class="server-icon">💻</div>
+                        <div class="server-info">
+                            <div class="server-name" id="local-server-name">本機電腦</div>
+                            <div class="server-ip" id="local-server-ip">載入中...</div>
+                        </div>
+                        <div class="server-arrow">></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 伺服器頁面 -->
+        <div class="page" id="page-server">
+            <div class="card">
+                <div class="card-title">伺服器</div>
+                <div class="card-subtitle">啟動後，其他設備可以連線到這台設備傳送音訊</div>
+                <div class="divider"></div>
+
+                <div class="info-text">
+                    ✅ 無壓縮音樂音質：16bit PCM 原始音頻傳輸，無任何損耗<br>
+                    ✅ 預設採樣率 44.1kHz 立體聲，CD級音質<br>
+                    ✅ 公網/局域網都可以連線，只需要輸入IP
+                </div>
+
+                <button class="btn primary server-start-btn" id="server-toggle-btn" onclick="toggleServer()">🎙️ 啟動伺服器並開始發送音頻</button>
+
+                <div class="server-status stopped" id="server-status">
+                    目前伺服器已關閉<br>
+                    點擊上方按鈕啟動，授予麥克風權限後就會開始等待其他設備連線
+                </div>
+            </div>
+        </div>
+
+        <!-- 設定頁面 -->
+        <div class="page" id="page-settings">
+            <div class="card">
+                <div class="card-title">設定</div>
+                <div class="divider"></div>
+
+                <div class="setting-row">
+                    <label>音頻採樣率</label>
+                    <select id="sample-rate">
+                        <option value="44100" selected>44.1 kHz (CD級，適合音樂)</option>
+                        <option value="48000">48 kHz (DVD/影片標準)</option>
+                        <option value="96000">96 kHz (高解析音質)</option>
+                    </select>
+                </div>
+
+                <div class="setting-row">
+                    <label>聲道數</label>
+                    <select id="channels">
+                        <option value="2" selected>立體聲 (2聲道)</option>
+                        <option value="1">單聲道 (節省頻寬)</option>
+                    </select>
+                </div>
+
+                <div class="setting-row">
+                    <label>位深度</label>
+                    <select id="bit-depth">
+                        <option value="16" selected>16-bit (CD級，無損)</option>
+                        <option value="24">24-bit (高解析，頻寬要求較高)</option>
+                    </select>
+                </div>
+
+                <div class="setting-row">
+                    <label>緩衝區長度 (毫秒)</label>
+                    <input type="number" id="buffer-ms" value="100" min="20" max="500">
+                    <div class="info-text">數值越低延遲越低，網絡不穩定時建議調高到150-200</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 右側面板（和截圖一致） -->
+    <div class="settings-panel" id="right-panel">
+        <div class="setting-card">
+            <div class="setting-title">Mode</div>
+            <div class="radio-item" id="radio-mic" onclick="selectMode('mic')">
+                <span class="radio-circle"></span>
+                <span class="radio-title">Mic</span>
+                <div class="radio-desc">Use your phone's mic</div>
+                <div class="radio-note">
+                    This mode requires at least Windows 10.
+                    Check <a href="https://docs.audiorelay.net/instructions/windows" target="_blank">https://docs.audiorelay.net/instructions/windows</a> for an alternative
+                </div>
+            </div>
+            <div class="radio-item checked" id="radio-playback" onclick="selectMode('playback')">
+                <span class="radio-circle"></span>
+                <span class="radio-title">Playback</span>
+                <div class="radio-desc">Listen to another device</div>
+            </div>
+        </div>
+
+        <div class="setting-card">
+            <div class="setting-title">音訊裝置</div>
+            <div class="select-desc">選擇在哪個裝置播放接收的音訊</div>
+            <div class="select-control" onclick="loadAudioDevices()">
+                <span class="select-value" id="selected-device">預設輸出裝置</span>
+                <span class="select-arrow">></span>
+            </div>
+        </div>
+    </div>
+
+    <script src="audiorelay.js"></script>
+</body>
+</html>
